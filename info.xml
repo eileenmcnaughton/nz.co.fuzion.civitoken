@@ -9,8 +9,8 @@
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">http://FIXME</url>
-    <url desc="Documentation">http://FIXME</url>
+    <url desc="Main Extension Page">https://github.com/eileenmcnaughton/nz.co.fuzion.civitoken</url>
+    <url desc="Documentation">https://github.com/eileenmcnaughton/nz.co.fuzion.civitoken</url>
     <url desc="Support">http://forum.civicrm.org</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>

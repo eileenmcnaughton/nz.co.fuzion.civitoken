@@ -145,15 +145,17 @@ function civitoken_initialize() {
   static $tokenFiles = null;
   $config = CRM_Core_Config::singleton();
   if(!is_array($tokenFiles)){
-    $directories = array( __DIR__  . '/token');
+    $directories = array( __DIR__  . '/tokens');
     if (!empty($config->customPHPPathDir)) {
       $directories[] = $config->customPHPPathDir . '/tokens';
     }
     foreach ($directories as $directory) {
-      $tokenFiles = _civitoken_civix_find_files($directory, '/.*\.inc$/');
+      $tokenFiles = _civitoken_civix_find_files($directory, '*.inc');
       foreach ($tokenFiles as $file) {
-        require_once $directory ."/". $file->filename ;
-        $tokens[] = $file->name;
+        require_once $file;
+        $re = "/.*\\/([a-z]*).inc/";
+        preg_match($re, $file, $matches);
+        $tokens[] = $matches[1];
       }
     }
   }
