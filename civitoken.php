@@ -123,13 +123,13 @@ function civitoken_civicrm_tokens(&$tokens) {
 /**
 * implementation of CiviCRM hook
 */
-function civitoken_civicrm_tokenValues( &$values, &$contactIDs, $jobID ) {
+function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = null, $tokens = array(), $context = null) {
   $tokenFunctions = civitoken_initialize();
   foreach ($tokenFunctions as $token) {
     $fn = $token . '_civitoken_get';
     foreach ($contactIDs as $contactID){
       $value =& $values[$contactID];
-      $fn($contactID,$value);
+      $fn($contactID, $value, $context);
     }
   }
 }

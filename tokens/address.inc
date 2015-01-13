@@ -16,7 +16,7 @@ function address_civitoken_get($cid, &$value){
   $contact = getMissingAddressFields($cid, $value);
   $domain = civicrm_api3('domain', 'getsingle', array('current_domain' => 1));
 
-  if($contact['country_id'] == $domain['domain_address']['country_id']) {
+  if(isset($domain['domain_address']) && $contact['country_id'] == $domain['domain_address']['country_id']) {
     //without unsetting this it seems to give unexpected results
     unset($contact['country_id'], $contact['country']);
   }
