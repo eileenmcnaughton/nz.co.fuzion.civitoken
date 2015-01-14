@@ -16,7 +16,12 @@
 function relationships_civitoken_declare($token) {
   $tokens = array();
   foreach (relationships_get_relationship_list() as $id => $label) {
-    $tokens[$token . '.display_name_' . $id] = $label;
+    $tokens[$token . '.display_name_' . $id] = $label . ' : Name of first contact found';
+    $tokens[$token . '.first_name_' . $id] = $label . ' : First Name of first contact found';
+    $tokens[$token . '.last_name_' . $id] = $label . ' : Last Name of first contact found';
+    $tokens[$token . '.phone_' . $id] = $label . ' : Phone of first contact found';
+    $tokens[$token . '.email_' . $id] = $label . ' : Email of first contact found';
+    $tokens[$token . '.id_' . $id] = $label . ' : ID of first contact found';
   }
   return $tokens;
 }
@@ -34,7 +39,7 @@ function relationships_get_relationship_list() {
   $result = civicrm_api3('relationship_type', 'get', array('is_active' => 1));
   $relationships = array();
   foreach ($result['values'] as $key => $values) {
-    $relationships[$key . '_a_b'] = 'Relationship: ' . $values['label_b_a'] . ' : Name of first contact found';
+    $relationships[$key . '_a_b'] = 'Relationship: ' . $values['label_b_a'];
   }
   return $relationships;
 }
@@ -52,14 +57,22 @@ function relationships_get_relationship_list() {
  * @throws \CiviCRM_API3_Exception
  */
 function relationships_civitoken_get($cid, &$value) {
+  $fields = array(
+    'display_name',
+    'phone',
+    'email',
+    'id',
+    'first_name',
+    'last_name',
+  );
   $relationships = civicrm_api3('relationship', 'get', array(
     'contact_id_a' => $cid,
     'is_active' => TRUE,
-    'api.contact.getvalue' => array(
+    'api.contact.getsingle' => array(
       'id' => '$value.contact_id_b',
-      'return' => 'display_name',),
-    )
-  );
+      'return' => $fields,
+    ),
+  ));
   foreach ($relationships['values'] as $relationship) {
     if (!empty($relationship['start_date']) && strtotime($relationship['start_date']) > strtotime('now')) {
       continue;
@@ -67,7 +80,19 @@ function relationships_civitoken_get($cid, &$value) {
     if (!empty($relationship['end_date']) && strtotime($relationship['start_date']) < strtotime('now')) {
       continue;
     }
-    $value['relationships.display_name_' . $relationship['relationship_type_id'] . '_a_b'] = $relationship['api.contact.getvalue'];
+    if (!empty($value['relationships.id_' . $relationship['relationship_type_id'] . '_a_b'])) {
+      // ID is set - so a contact with this relationship has been found, skip.
+      continue;
+    }
+
+    foreach ($fields as $key) {
+      if (empty($relationship['api.contact.getsingle'][$key])) {
+        $value['relationships.' . $key . '_' . $relationship['relationship_type_id'] . '_a_b'] = '';
+      }
+      else {
+        $value['relationships.' . $key . '_' . $relationship['relationship_type_id'] . '_a_b'] = $relationship['api.contact.getsingle'][$key];
+      }
+    }
   }
   return $value;
 }
