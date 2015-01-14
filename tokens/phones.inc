@@ -6,14 +6,14 @@ function phones_civitoken_declare($token) {
   );
 }
 
-/*
- * based on Michael McAndrew's code but updated to use v3 & to only query for
- * required fields
- * https://github.com/michaelmcandrew/civicrm-addressblocktoken/blob/master/addressblocktoken.module
+/**
+ * @param $cid
+ * @param $value
+ * @return mixed
  */
 function phones_civitoken_get($cid, &$value) {
-  $value['address.work_phone'] = phones_civitoken_getPhone($cid, $value, 'Work');
-  $value['address.mobiles'] = phones_civitoken_getPhone($cid, $value, 'mobile');
+  $value['phones.work_phone'] = phones_civitoken_getPhone($cid, $value, 'Work');
+  $value['phones.mobiles'] = phones_civitoken_getPhone($cid, $value, 'mobile');
   return $value;
 }
 
