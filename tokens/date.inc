@@ -21,5 +21,5 @@ function date_civitoken_declare($token){
  * @param $value
  */
 function date_civitoken_get($cid, &$value){
-  $value[$cid]['date.today_format_full'] = CRM_Utils_Date::customFormat(date('Y-m-d'), NULL, array('Y', 'm', 'd'));
+  $value['date.today_format_full'] = CRM_Utils_Date::customFormat(date('Y-m-d'), NULL, array('Y', 'm', 'd'));
 }
