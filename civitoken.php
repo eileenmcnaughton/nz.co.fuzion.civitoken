@@ -147,7 +147,9 @@ function civitoken_initialize() {
   if(!is_array($tokenFiles)){
     $directories = array( __DIR__  . '/tokens');
     if (!empty($config->customPHPPathDir)) {
-      $directories[] = $config->customPHPPathDir . '/tokens';
+      if (file_exists($config->customPHPPathDir . '/tokens')) {
+        $directories[] = $config->customPHPPathDir . '/tokens';
+      }
     }
     foreach ($directories as $directory) {
       $tokenFiles = _civitoken_civix_find_files($directory, '*.inc');

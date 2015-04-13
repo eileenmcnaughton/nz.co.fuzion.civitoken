@@ -7,8 +7,9 @@ function phones_civitoken_declare($token) {
 }
 
 /**
- * @param $cid
- * @param $value
+ * Get Phone tokens
+ * @param int $cid
+ * @param array $value
  * @return mixed
  */
 function phones_civitoken_get($cid, &$value) {
