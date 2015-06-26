@@ -115,14 +115,20 @@ function civitoken_civicrm_tokens(&$tokens) {
   $civitokens = array();
   foreach ($tokenFunctions as $token) {
     $fn = $token . '_civitoken_declare';
-    $tokens[$token] = array_merge($civitokens,$fn($token));
+    $tokens[$token] = array_merge($civitokens, $fn($token));
   }
   $tokens['civitokens']= $civitokens;
 }
 
 /**
-* implementation of CiviCRM hook
-*/
+ * implementation of CiviCRM hook
+ *
+ * @param array $values
+ * @param $contactIDs
+ * @param null $job
+ * @param array $tokens
+ * @param null $context
+ */
 function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = null, $tokens = array(), $context = null) {
   $tokenFunctions = civitoken_initialize();
   foreach ($tokenFunctions as $token) {

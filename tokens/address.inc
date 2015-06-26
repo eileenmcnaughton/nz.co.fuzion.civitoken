@@ -90,7 +90,7 @@ function getMissingAddressFields($contactID, $contactDetails){
 
   $contact = civicrm_api('contact','getsingle', array('version' =>3, 'id' => $contactID,'return' => $fieldsToFill));
   if(in_array('addressee', $requiredFields)) {
-    $addresseeFields = _extractTokens($contact['addressee']);
+    $addresseeFields = _extractTokens(CRM_Utils_Array::value('addressee', $contact));
     $notFilled = array_diff($addresseeFields, $fieldsToFill);
     if(!empty($notFilled)) {
       $contact = array_merge($contact, civicrm_api('contact','getsingle', array('version' =>3, 'id' => $contactID,'return' => $notFilled)));
