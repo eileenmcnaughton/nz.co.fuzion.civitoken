@@ -4,12 +4,16 @@ function latestcurrentmembership_civitoken_declare($token){
   return array(
     $token . '.type' => 'Latest Current Membership Type',
     $token . '.end_date' => 'Latest Current Membership End Date',
+    $token . '.end_date_raw' => 'Latest Current Membership End Date (raw)',
     $token . '.start_date' => 'Latest Current Membership Start Date',
+    $token . '.start_date_raw' => 'Latest Current Membership Start Date (raw)',
     $token . '.fee' => 'Latest Current Membership Fee',
     $token . '.status' => 'Latest Current Membership Status',
     $token . '.alltype' => 'Latest Membership Type',
     $token . '.allend_date' => 'Latest Membership End Date',
+    $token . '.allend_date_raw' => 'Latest Membership End Date (raw)',
     $token . '.allstart_date' => 'Latest Membership Start Date',
+    $token . '.allstart_date_raw' => 'Latest Membership Start Date (raw)',
     $token . '.allfee' => 'Latest Membership Fee',
     $token . '.allstatus' => 'Latest Membership Status',
   );
@@ -56,7 +60,9 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
   if (!CRM_Utils_Array::value('is_error', $membership)) {
     $value['latestcurrentmembership.' . $prefix . 'type'] = $membership['api.membership_type.getsingle']['name'];
     $value['latestcurrentmembership.' . $prefix . 'end_date'] = !empty($membership['end_date']) ? date('d-m-Y', strtotime($membership['end_date'])) : '';
+    $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? date('Ymd', strtotime($membership['end_date'])) : '';
     $value['latestcurrentmembership.' . $prefix . 'start_date'] = date('d-m-Y', strtotime($membership['start_date']));
+    $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = date('Ymd', strtotime($membership['start_date']));
     $value['latestcurrentmembership.' . $prefix . 'fee'] = $membership['api.membership_type.getsingle']['minimum_fee'];
     $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
   }
