@@ -14,6 +14,10 @@ function upcomingevents_civitoken_declare($token){
 */
 function upcomingevents_civitoken_get($cid, &$value){
   $events = civicrm_api('event', 'get', array('sequential' => 1,'version' => 3, 'event_type_id' => 16, 'filters' => array('start_date_low' => 'now()'), 'debug' => 1, 'sort' => 'start_date', 'options' => array('limit' => 1)));
+  /*make sure there are events to return*/
+  if($events[count]==0){
+    return;
+  }
   $value['upcomingevents.upcoming_selection'] = $events['values'][0]['title'];
   $participants = civicrm_api('participant', 'get', array('version' => 3, 'event_start_date_low' => 'now', 'sort'=> 'event_start_date', 'contact_id' => $cid, 'api.event.get' => array('return' => array('event_type_id', 'summary'))));
 
