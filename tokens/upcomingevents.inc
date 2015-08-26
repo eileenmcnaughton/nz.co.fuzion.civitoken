@@ -1,53 +1,77 @@
 <?php
 
+/**
+ * Declare token for upcoming events.
+ *
+ * @param string $token
+ *
+ * @return array
+ */
 function upcomingevents_civitoken_declare($token){
   return array(
-    $token. '.upcoming_events' => 'Upcoming Events',
-    $token. '.upcoming_event_summaries' => 'Upcoming Events No Titles',
-    $token. '.upcoming_titles' => 'Upcoming Event Titles',
-    $token. '.upcoming_selection' => 'Upcoming Event Selection',
-   );
+    $token . '.upcoming_events' => 'Upcoming Events',
+    $token . '.upcoming_event_summaries' => 'Upcoming Events No Titles',
+    $token . '.upcoming_titles' => 'Upcoming Event Titles',
+    $token . '.upcoming_selection' => 'Upcoming Event Selection',
+  );
 }
 
-/*
+/**
+ * Get upcoming events token.
  *
-*/
-function upcomingevents_civitoken_get($cid, &$value){
-  $events = civicrm_api('event', 'get', array('sequential' => 1,'version' => 3, 'event_type_id' => 16, 'filters' => array('start_date_low' => 'now()'), 'debug' => 1, 'sort' => 'start_date', 'options' => array('limit' => 1)));
-  /*make sure there are events to return*/
-  if($events[count]==0){
+ * @param int $cid
+ * @param array $value
+ */
+function upcomingevents_civitoken_get($cid, &$value) {
+  $events = civicrm_api3('event', 'get', array(
+    'sequential' => 1,
+    'event_type_id' => 16,
+    'filters' => array('start_date_low' => 'now()'),
+    'sort' => 'start_date',
+    'options' => array('limit' => 1),
+  ));
+
+  // Make sure there are events to return.
+  if ($events['count'] == 0) {
     return;
   }
   $value['upcomingevents.upcoming_selection'] = $events['values'][0]['title'];
-  $participants = civicrm_api('participant', 'get', array('version' => 3, 'event_start_date_low' => 'now', 'sort'=> 'event_start_date', 'contact_id' => $cid, 'api.event.get' => array('return' => array('event_type_id', 'summary'))));
+  $participants = civicrm_api3('participant', 'get', array(
+    'event_start_date_low' => 'now',
+    'sort' => 'event_start_date',
+    'contact_id' => $cid,
+    'api.event.get' => array('return' => array('event_type_id', 'summary')),
+  ));
 
-  if(empty($participants['count'])){
+  if (empty($participants['count'])) {
     return;
   }
   $upcomingEvents = "<table>";
+  $upcomingEventSummaries = $upcomingEventTitles = '';
 
-  foreach ($participants['values'] as $particpantID => $participant){
-    if($participant['api.event.get']['values'][0] ==16){
+  foreach ($participants['values'] as $particpantID => $participant) {
+    if ($participant['api.event.get']['values'][0] == 16) {
       continue;
     }
-    $upcomingEventTitles[]= $participant['event_title'];
-    $upcomingEvents .="<tr><td><hr /></td></tr> <tr><td><h2>{$participant['event_title']}</h2></td></tr>"
+    $upcomingEventTitles[] = $participant['event_title'];
+    $upcomingEvents .= "<tr><td><hr /></td></tr> <tr><td><h2>{$participant['event_title']}</h2></td></tr>"
       . "<tr><td>" . nl2br($participant['api.event.get']['values'][0]['summary']) . " </td></tr>
         ";
     $upcomingEventSummaries .= "<table><tr><td><hr /></td></tr><tr><td>" . nl2br($participant['api.event.get']['values'][0]['summary']) . "</td></tr></table>";
-
-;
   }
   $upcomingEvents .= "</table>";
-  $value['upcomingevents.upcoming_titles'] = implode(" and ",$upcomingEventTitles);
+  $value['upcomingevents.upcoming_titles'] = implode(" and ", $upcomingEventTitles);
   $value['upcomingevents.upcoming_events'] = $upcomingEvents;
   $value['upcomingevents.upcoming_event_summaries'] = $upcomingEventSummaries;
-
-  return;
 }
-/*
- * Probably should use civicrm date formatting but quick & dirty
+
+/**
+ * Probably should use civicrm date formatting but quick & dirty.
+ *
+ * @param string $date
+ *
+ * @return string
  */
-function upcomingevents_date_format($date){
+function upcomingevents_date_format($date) {
   return date('l\s \a\t g a', strtotime($date));
 }
