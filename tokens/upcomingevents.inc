@@ -25,7 +25,6 @@ function upcomingevents_civitoken_declare($token){
 function upcomingevents_civitoken_get($cid, &$value) {
   $events = civicrm_api3('event', 'get', array(
     'sequential' => 1,
-    'event_type_id' => 16,
     'filters' => array('start_date_low' => 'now()'),
     'sort' => 'start_date',
     'options' => array('limit' => 1),
