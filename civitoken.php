@@ -131,6 +131,10 @@ function civitoken_civicrm_tokens(&$tokens) {
  */
 function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = null, $tokens = array(), $context = null) {
   $tokenFunctions = civitoken_initialize();
+  if (empty($tokens)) {
+    return;
+  }
+
   foreach ($tokenFunctions as $token) {
     $fn = $token . '_civitoken_get';
     foreach ($contactIDs as $contactID){
