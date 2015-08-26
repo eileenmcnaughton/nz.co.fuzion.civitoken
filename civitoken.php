@@ -131,7 +131,8 @@ function civitoken_civicrm_tokens(&$tokens) {
  */
 function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = null, $tokens = array(), $context = null) {
   $tokenFunctions = civitoken_initialize();
-  if (empty($tokens)) {
+  // @todo figure out full conditions for returning here.
+  if (empty($tokens) || array_keys($tokens) == array('contact')) {
     return;
   }
 
