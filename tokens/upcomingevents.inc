@@ -39,7 +39,10 @@ function upcomingevents_civitoken_get($cid, &$value) {
     'event_start_date_low' => 'now',
     'sort' => 'event_start_date',
     'contact_id' => $cid,
-    'api.event.get' => array('return' => array('event_type_id', 'summary')),
+    'api.event.get' => array(
+      'return' => array('event_type_id', 'summary'),
+      'filters' => array('start_date_low' => 'now()'),
+    ),
   ));
 
   if (empty($participants['count'])) {
@@ -49,7 +52,7 @@ function upcomingevents_civitoken_get($cid, &$value) {
   $upcomingEventSummaries = $upcomingEventTitles = '';
 
   foreach ($participants['values'] as $particpantID => $participant) {
-    if ($participant['api.event.get']['values'][0] == 16) {
+    if (empty($participant['api.event.get']['values'][0]) || $participant['api.event.get']['values'][0] == 16) {
       continue;
     }
     $upcomingEventTitles[] = $participant['event_title'];
