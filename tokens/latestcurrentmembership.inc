@@ -63,12 +63,12 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
 
   if (!CRM_Utils_Array::value('is_error', $membership)) {
     $value['latestcurrentmembership.' . $prefix . 'type'] = $membership['api.membership_type.getsingle']['name'];
-    $value['latestcurrentmembership.' . $prefix . 'end_date'] = !empty($membership['end_date']) ? date('d-m-Y', strtotime($membership['end_date'])) : '';
-    $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? date('Ymd', strtotime($membership['end_date'])) : '';
-    $value['latestcurrentmembership.' . $prefix . 'start_date'] = date('d-m-Y', strtotime($membership['start_date']));
-    $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = date('Ymd', strtotime($membership['start_date']));
-    $value['latestcurrentmembership.' . $prefix . 'join_date'] = date('d-m-Y', strtotime($membership['join_date']));
-    $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = date('Ymd', strtotime($membership['join_date']));
+    $value['latestcurrentmembership.' . $prefix . 'end_date'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date']) : '';
+    $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date'],"%Y%m%d") : '';
+    $value['latestcurrentmembership.' . $prefix . 'start_date'] = CRM_Utils_Date::customFormat($membership['start_date']);
+    $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = CRM_Utils_Date::customFormat($membership['start_date'],"%Y%m%d");
+    $value['latestcurrentmembership.' . $prefix . 'join_date'] = CRM_Utils_Date::customFormat($membership['join_date']);
+    $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'],"%Y%m%d");
     $value['latestcurrentmembership.' . $prefix . 'fee'] = $membership['api.membership_type.getsingle']['minimum_fee'];
     $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
   }
