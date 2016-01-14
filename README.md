@@ -10,7 +10,7 @@ are particularly useful to use on your "fees due" automatic notices.
 Installation
 -----------
 
-Installing this extention is quite easy. You only have to:
+Installing this extension is quite easy. You only have to:
 
 1. Visit your `civicrm/admin/extensions` page
 2. See what is your extension directory, or create one if it doesn't exist
