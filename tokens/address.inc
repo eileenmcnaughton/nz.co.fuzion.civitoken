@@ -15,7 +15,16 @@ function address_civitoken_declare($token){
 function address_civitoken_get($cid, &$value){
   $contact = getMissingAddressFields($cid, $value);
   $domain = civicrm_api3('domain', 'getsingle', array('current_domain' => 1));
-
+  if (isset($countact['country_id')) {
+    $format = CRM_Core_DAO::singleValueQuery("SELECT format FROM civicrm_address_format a LEFT JOIN civicrm_country c ON c.address_format_id = a.id");
+  }
+  if (empty($format) {
+      $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+    'mailing_format'
+  );
+  }
+  
+  
   if(isset($domain['domain_address']) && $contact['country_id'] == $domain['domain_address']['country_id']) {
     //without unsetting this it seems to give unexpected results
     unset($contact['country_id'], $contact['country']);
@@ -23,9 +32,7 @@ function address_civitoken_get($cid, &$value){
   else{
     $value['address.address_conditional_country'] = $contact['country'] = $contact['address.address_conditional_country'] = strtoupper($contact['country']);
   }
-  $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-    'mailing_format'
-  );
+
   $format = str_replace('{address.address_conditional_country}', $contact['country'], $format);
   $value['address.address_block_text']= CRM_Utils_Address::format($contact, $format);
   $value['address.address_block']=nl2br(CRM_Utils_Address::format($contact, $format));
