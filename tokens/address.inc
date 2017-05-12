@@ -15,7 +15,7 @@ function address_civitoken_declare($token){
 function address_civitoken_get($cid, &$value){
   $contact = getMissingAddressFields($cid, $value);
   $domain = civicrm_api3('domain', 'getsingle', array('current_domain' => 1));
-  if (isset($contact['country_id'])) {
+  if (!empty($contact['country_id'])) {
     $format = CRM_Core_DAO::singleValueQuery("SELECT format FROM civicrm_address_format a LEFT JOIN civicrm_country c ON c.address_format_id = a.id WHERE c.id = {$contact['country_id']}");
   }
 
