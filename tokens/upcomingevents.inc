@@ -23,9 +23,10 @@ function upcomingevents_civitoken_declare($token){
  * @param array $value
  */
 function upcomingevents_civitoken_get($cid, &$value) {
+  $curDate = date('Y-m-d');
   $events = civicrm_api3('event', 'get', array(
     'sequential' => 1,
-    'filters' => array('start_date_low' => 'now()'),
+    'start_date' => array('>=' => $curDate),
     'sort' => 'start_date',
     'options' => array('limit' => 1),
   ));
@@ -41,7 +42,7 @@ function upcomingevents_civitoken_get($cid, &$value) {
     'contact_id' => $cid,
     'api.event.get' => array(
       'return' => array('event_type_id', 'summary'),
-      'filters' => array('start_date_low' => 'now()'),
+      'start_date' => array('>=' => $curDate),
     ),
   ));
 
