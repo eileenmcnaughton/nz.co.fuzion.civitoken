@@ -11,6 +11,7 @@ function latestcontribs_civitoken_get($cid, &$value, $context){
   $params = array(
     'sequential' => 1,
     'contact_id' => $cid,
+    'is_test' => 0,
     'options' => array('sort' => "receive_date DESC", 'limit' => 1),
   );
   $softcredit_formatted = "";

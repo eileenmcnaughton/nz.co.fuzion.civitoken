@@ -35,6 +35,7 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
     'contact_id' => $cid,
     'sequential' => 1,
     'api.membership_type.getsingle' => 1,
+    'is_test' => 0,
     'options' => array('limit' => 1, 'sort' => 'end_date DESC'),
     //'return' => array('membership_end_date', 'end_date', 'start_date', 'status_id', 'minimum_fee', 'membership_name', 'id', 'membership_type_id'),
   );
