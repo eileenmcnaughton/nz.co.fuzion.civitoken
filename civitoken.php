@@ -230,3 +230,21 @@ function civitoken_initialize() {
   $civitoken_init = 1;
   return $tokens;
 }
+
+/**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
+ */
+function civitoken_civicrm_navigationMenu(&$menu) {
+
+  _civitoken_civix_insert_navigation_menu($menu, 'Administer/Communications', array(
+    'label' => ts('Enabled Tokens', array('domain' => 'nz.co.fuzion.civitoken')),
+    'name' => 'enabled_civitokens',
+    'url' => 'civicrm/a/#/civitoken/settings',
+    'permission' => 'administer CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ));
+  _civitoken_civix_navigationMenu($menu);
+}
