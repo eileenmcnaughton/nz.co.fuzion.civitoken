@@ -1,0 +1,32 @@
+<div class="crm-container">
+  <h1 crm-page-title>{{ts('Enabled CiviTokens')}}</h1>
+
+  <form name="civiTokenForm" crm-ui-id-scope>
+
+    <div>
+      <button class="crm-button" ng-click="save()">{{ts('Save')}}</button>
+    </div>
+
+    <div class="help">
+      <p>{{ts('Select the tokens you wish to enable on this site.')}}</p>
+
+      <p>{{ts('If no tokens are disabled it is considered to be unrestricted (if  you really want none uninstall civitoken).')}}</p>
+    </div>
+
+    <div>
+      <div ng-repeat="(index, setting) in settingOptions">
+        <input
+            type="checkbox"
+            name="selectedTokens"
+            value="{{setting.name}}"
+            ng-model="setting.selected"
+        >
+        <label >{{setting.title}}</label>
+      </div>
+    </div>
+    <div>
+      <button class="crm-button" ng-click="save()">{{ts('Save')}}</button>
+    </div>
+  </form>
+
+</div>

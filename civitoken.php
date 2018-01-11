@@ -59,6 +59,17 @@ function civitoken_civicrm_disable() {
 }
 
 /**
+ * Implements hook_civicrm_angularModules().
+ *
+ * Generate a list of Angular modules.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
+ */
+function civitoken_civicrm_angularModules(&$angularModules) {
+  _civitoken_civix_civicrm_angularModules($angularModules);
+}
+
+/**
  * Implementation of hook_civicrm_upgrade
  *
  * @param $op string, the type of operation being performed; 'check' or 'enqueue'
@@ -142,6 +153,24 @@ function civitoken_civicrm_tokens_all(&$tokens) {
     $tokens[$token] = array_merge($civitokens, $fn($token));
   }
   $tokens['civitokens']= $civitokens;
+}
+
+/**
+ * Get a flattened list of tokens.
+ *
+ * e.g
+ * ['address.address_block' => 'Address Block', 'date.today' => 'Today\'s date']].
+ */
+function civitoken_get_flattened_list_all() {
+  $tokens = array();
+  $flattenedTokens = array();
+  civitoken_civicrm_tokens_all($tokens);
+  foreach ($tokens as $category) {
+    foreach ($category as $token => $title) {
+      $flattenedTokens[$token] = $title;
+    }
+  }
+  return $flattenedTokens;
 }
 
 /**

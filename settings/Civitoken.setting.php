@@ -18,7 +18,6 @@
   'html_type' => 'Checkboxes',
   'quick_form_type' => 'Checkboxes',
   'pseudoconstant' => array(
-     'callback' => 'civitoken_civicrm_tokens_all',
+     'callback' => 'civitoken_get_flattened_list_all',
    ),
-   'default_callback' => 'civitoken_civicrm_tokens_all',
 ));
