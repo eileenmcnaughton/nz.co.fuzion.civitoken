@@ -111,6 +111,30 @@ function civitoken_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 * implementation of CiviCRM hook
 */
 function civitoken_civicrm_tokens(&$tokens) {
+  civitoken_civicrm_tokens_all($tokens);
+  $setting = civicrm_api3('Setting', 'get', ['return' => 'civitoken_enabled_tokens', 'sequential' => 1])['values'][0];
+
+  if (empty($setting) || empty($setting['civitoken_enabled_tokens'])) {
+    // Treat un-configured as 'all enabled'.
+    return;
+  }
+
+  foreach ($tokens as $category => $tokenSubset) {
+    foreach ($tokenSubset as $key => $token) {
+      if (!in_array($key, $setting['civitoken_enabled_tokens'])) {
+        unset($tokens[$category][$key]);
+      }
+    }
+    if (empty($tokens[$category])) {
+      unset($tokens[$category]);
+    }
+  }
+}
+
+/**
+ * implementation of CiviCRM hook
+ */
+function civitoken_civicrm_tokens_all(&$tokens) {
   $tokenFunctions = civitoken_initialize();
   $civitokens = array();
   foreach ($tokenFunctions as $token) {
