@@ -18,6 +18,14 @@ a specific format. Currently the only way to create such formats is directly
 in the DB. If, however, you do create those formats, this
 extension will respect them in the address blocks.
 
+*A note about country in the address block*
+
+Several countries postal codes require that the country be excluded if it is a
+domestic posting (if you wish to get bulk postal rates), I am not aware
+of any where the country IS required for domestic. This extension does not
+include the country in the address block if it matches that configured for
+the domain organisation.
+
 
 ![list of tokens](docs/token_listing.png)
 ![list of tokens2](docs/token_listing_2.png)
