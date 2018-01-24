@@ -37,7 +37,7 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
 					civicrm_contribution.total_amount, 
 					civicrm_financial_type.name as financial_type
 					FROM civicrm_contribution 
-					LEFT JOIN civicrm_financial_type ON civicrm_contribution.financial_type_id = ft.id
+					LEFT JOIN civicrm_financial_type ON civicrm_contribution.financial_type_id = civicrm_financial_type.id
 					WHERE 
 					civicrm_contribution.is_test = 0 
 					AND civicrm_contribution.contribution_status_id = %2
