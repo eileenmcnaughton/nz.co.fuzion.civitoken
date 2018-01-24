@@ -35,7 +35,7 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
 	try {
 		$pending_contribution_status = civicrm_api3('OptionValue', 'getvalue', array('option_group_id' => 'contribution_status', 'return' => 'value', 'name' => 'Pending'));
 		$sql = "SELECT
-					civicrm_contribution.id 
+					civicrm_contribution.id,
 					civicrm_contribution.receive_date, 
 					civicrm_contribution.total_amount, 
 					civicrm_financial_type.name as financial_type
@@ -59,7 +59,7 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
 			$value['nextpendingcontribution.financial_type'] = $dao->financial_type;	
 			
 			$balanceDue = CRM_Core_BAO_FinancialTrxn::getPartialPaymentWithType($dao->id, 'contribution', FALSE, $dao->total_amount);
-			$value['nextpendingcontribution.balance_due'] = \CRM_Utils_Money::format($dao->$balanceDue);
+			$value['nextpendingcontribution.balance_due'] = \CRM_Utils_Money::format($balanceDue);
 		}
 	} catch (Exception $e) {
 		// do nothing
