@@ -6,6 +6,7 @@ function nextpendingcontribution_civitoken_declare($token){
     $token . '.total_amount' => 'Total amount of next pending contribution',
     $token . '.receive_date' => 'Receive date of next pending contribution',
     $token . '.financial_type' => 'Financial type of next pending contribution',
+    $token . '.balance_due' => 'Balance due of the next pending contribution',
   );
 }
 
@@ -33,7 +34,9 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
 	
 	try {
 		$pending_contribution_status = civicrm_api3('OptionValue', 'getvalue', array('option_group_id' => 'contribution_status', 'return' => 'value', 'name' => 'Pending'));
-		$sql = "SELECT civicrm_contribution.receive_date, 
+		$sql = "SELECT
+					civicrm_contribution.id 
+					civicrm_contribution.receive_date, 
 					civicrm_contribution.total_amount, 
 					civicrm_financial_type.name as financial_type
 					FROM civicrm_contribution 
@@ -54,6 +57,9 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
 			$receive_date = new DateTime($dao->receive_date);
 			$value['nextpendingcontribution.receive_date'] = \CRM_Utils_Date::customFormat($receive_date->format('Y-m-d'));
 			$value['nextpendingcontribution.financial_type'] = $dao->financial_type;	
+			
+			$balanceDue = CRM_Core_BAO_FinancialTrxn::getPartialPaymentWithType($dao->id, 'contribution', FALSE, $dao->total_amount);
+			$value['nextpendingcontribution.balance_due'] = \CRM_Utils_Money::format($dao->$balanceDue);
 		}
 	} catch (Exception $e) {
 		// do nothing
