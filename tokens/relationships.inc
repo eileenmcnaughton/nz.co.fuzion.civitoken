@@ -36,7 +36,7 @@ function relationships_civitoken_declare($token) {
  * @throws \CiviCRM_API3_Exception
  */
 function relationships_get_relationship_list() {
-  $result = civicrm_api3('relationship_type', 'get', array('is_active' => 1));
+  $result = civicrm_api3('relationship_type', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
   $relationships = array();
   foreach ($result['values'] as $key => $values) {
     $relationships[$key . '_a_b'] = 'Relationship: ' . $values['label_b_a'];
