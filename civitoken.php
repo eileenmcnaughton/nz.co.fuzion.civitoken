@@ -128,6 +128,7 @@ function civitoken_civicrm_tokens(&$tokens) {
 
   if (empty($setting) || empty($setting['civitoken_enabled_tokens'])) {
     // Treat un-configured as 'all enabled'.
+    $tokens = array_merge($tokens,$localTokens);
     return;
   }
 
