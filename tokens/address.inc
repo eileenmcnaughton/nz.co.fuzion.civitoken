@@ -33,7 +33,7 @@ function address_civitoken_get($cid, &$value){
     $value['address.address_conditional_country'] = $contact['country'] = $contact['address.address_conditional_country'] = strtoupper($contact['country']);
   }
 
-  $format = str_replace('{address.address_conditional_country}', $contact['country'], $format);
+  $format = str_replace('{address.address_conditional_country}', CRM_Utils_Array::value('country', $contact), $format);
   $value['address.address_block_text']= CRM_Utils_Address::format($contact, $format);
   $value['address.address_block']=nl2br(CRM_Utils_Address::format($contact, $format));
   return $value;
