@@ -1,6 +1,6 @@
 <?php
 
-function contribution_civitoken_declare($token){
+function contribution_civitoken_declare($token) {
   return array(
     $token . '.total_this_year_contribution_amount' => 'Total amount given this year',
     $token . '.total_last_year_contribution_amount' => 'Total amount given last year',
@@ -8,23 +8,44 @@ function contribution_civitoken_declare($token){
 		$token . '.total_this_year_contribution_deductible_amount' => 'Total deductible amount given this year',
     $token . '.total_last_year_contribution_deductible_amount' => 'Total deductible amount given last year',
     $token . '.total_contribution_deductible_amount' => 'Total deductible contributed amount all time',
+    $token . '.latest_recur_contribution_id' => 'Latest Recur Contribution ID',
   );
 }
 
-function contribution_civitoken_get($cid, &$value, $context){
-	$value['contribution.total_this_year_contribution_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_amount_donated_by_year($cid, 0));
-	$value['contribution.total_last_year_contribution_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_amount_donated_by_year($cid, -1));
+function contribution_civitoken_get($cid, &$value, $context) {
+  $value['contribution.total_this_year_contribution_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_amount_donated_by_year($cid, 0));
+  $value['contribution.total_last_year_contribution_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_amount_donated_by_year($cid, -1));
   $value['contribution.total_contribution_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_amount_donated($cid));
-	
-	$value['contribution.total_this_year_contribution_deductible_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_deductible_amount_donated_by_year($cid, 0));
-	$value['contribution.total_last_year_contribution_deductible_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_deductible_amount_donated_by_year($cid, -1));
+  $value['contribution.total_this_year_contribution_deductible_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_deductible_amount_donated_by_year($cid, 0));
+  $value['contribution.total_last_year_contribution_deductible_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_deductible_amount_donated_by_year($cid, -1));
   $value['contribution.total_contribution_deductible_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_deductible_amount_donated($cid));
+  $value['contribution.latest_recur_contribution_id'] = _contribution_civitoken_get_latest_recur_contribution_id($cid);
   return $value;
 }
 
 /**
+ * Get latest recur contribution id for the contact.
+ *
+ * @param int $cid
+ *   The contact id.
+ * @return int
+ */
+function _contribution_civitoken_get_latest_recur_contribution_id($cid) {
+  $recur = civicrm_api3('ContributionRecur', 'get', array(
+    'sequential' => 1,
+    'contact_id' => $cid,
+    'contribution_status_id' => "Pending",
+    'options' => array('sort' => "id DESC"),
+  ));
+  if (!empty($recur['count']) && !empty($recur['values'][0]['id'])) {
+    return $recur['values'][0]['id'];
+  }
+  return NULL;
+}
+
+/**
  * Get total donated all time.
- * 
+ *
  * @param int $cid
  *   The contact id.
  * @return float
