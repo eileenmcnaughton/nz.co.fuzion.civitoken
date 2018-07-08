@@ -5,7 +5,7 @@ Fuzion Token extension for CiviCRM, that provides its users extra tokens.
 
 These include tokens to access membership data, like membership type, start and end dates, and status. These are particularly useful to use on your "fees due" automatic notices.
 
-By default all tokens are enabled. If you just want some there is a setting page
+By default all tokens are enabled. If you just want some there is a setting page which can be found at /civicrm/a/#/civitoken/settings
 (screenshot below).
 
 *A note about country-specific address formatting*
