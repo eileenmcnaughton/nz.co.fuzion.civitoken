@@ -17,6 +17,8 @@ function address_civitoken_get($cid, &$value){
   $domain = civicrm_api3('domain', 'getsingle', array('current_domain' => 1));
   if (!empty($contact['country_id'])) {
     $format = CRM_Core_DAO::singleValueQuery("SELECT format FROM civicrm_address_format a LEFT JOIN civicrm_country c ON c.address_format_id = a.id WHERE c.id = {$contact['country_id']}");
+    // Call getMissingAddressFields again, you may have different address fields now.
+    $contact = getMissingAddressFields($cid, $value, $format);
   }
 
   if (empty($format)) {
@@ -49,11 +51,14 @@ function address_civitoken_get($cid, &$value){
  *
  * @param int $contactID  relevant contact id
  * @param array $values prepopulated values array for given contact
+ * @param string $format The desired address format.
  */
-function getMissingAddressFields($contactID, $contactDetails){
-  $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
+function getMissingAddressFields($contactID, $contactDetails, $format = NULL) {
+  if (empty($format)) {
+    $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
       'mailing_format'
-  );
+    );
+  }
   // country & display name are used even if their token is not - e.g organisation name
   $requiredFields = array_merge(_extractTokens($format), array('country', 'display_name'));
 
