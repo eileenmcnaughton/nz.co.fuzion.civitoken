@@ -133,6 +133,8 @@ function civitoken_civicrm_tokens(&$tokens) {
 
     if (empty($setting) || empty($setting['civitoken_enabled_tokens'])) {
       // Treat un-configured as 'all enabled'.
+      \Civi::cache()->set('civitoken_enabled_tokens', $civiTokens);
+      $tokens = array_merge($tokens, $civiTokens);
       return;
     }
 
