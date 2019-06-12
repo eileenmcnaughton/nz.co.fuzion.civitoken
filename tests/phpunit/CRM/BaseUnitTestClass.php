@@ -6,7 +6,7 @@
  * Time: 12:24 PM
  */
 
-class BaseUnitTestClass extends \PHPUnit_Framework_TestCase{
+class BaseUnitTestClass extends \PHPUnit\Framework\TestCase{
 
   protected $_apiversion = 3;
   /**
