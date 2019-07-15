@@ -50,7 +50,8 @@ function upcomingevents_civitoken_get($cid, &$value) {
     return;
   }
   $upcomingEvents = "<table>";
-  $upcomingEventSummaries = $upcomingEventTitles = '';
+  $upcomingEventSummaries = '';
+  $upcomingEventTitles = array();
 
   foreach ($participants['values'] as $particpantID => $participant) {
     if (empty($participant['api.event.get']['values'][0]) || $participant['api.event.get']['values'][0] == 16) {
