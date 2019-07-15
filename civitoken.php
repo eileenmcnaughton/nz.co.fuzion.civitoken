@@ -229,6 +229,12 @@ function civitoken_initialize() {
         $directories[] = $config->customPHPPathDir . '/tokens';
       }
     }
+    // lookup extension directories
+    foreach (explode(':', get_include_path()) as $path) {
+      if (false !== strpos($path, $config->extensionsDir) && file_exists($path . '/tokens')) {
+        $directories[] = $path;
+      }
+    }
     foreach ($directories as $directory) {
       $tokenFiles = _civitoken_civix_find_files($directory, '*.inc');
       foreach ($tokenFiles as $file) {
