@@ -206,7 +206,7 @@ function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = null, $toke
       $fn = $token . '_civitoken_get';
       foreach ($contactIDs as $contactID) {
         $value =& $values[$contactID];
-        $fn($contactID, $value, $context);
+        $fn($contactID, $value, $context, $job);
       }
     }
   }
