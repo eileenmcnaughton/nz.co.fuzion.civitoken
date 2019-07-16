@@ -20,6 +20,7 @@ function latestcurrentmembership_civitoken_declare($token){
     $token . '.alljoin_date_raw' => 'Latest Membership Join Date (raw)',
     $token . '.allfee' => 'Latest Membership Fee',
     $token . '.allstatus' => 'Latest Membership Status',
+    $token . '.membership_id' => 'Latest Membership ID',
   );
 }
 
@@ -72,6 +73,7 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
     $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'],"%Y%m%d");
     $value['latestcurrentmembership.' . $prefix . 'fee'] = $membership['api.membership_type.getsingle']['minimum_fee'];
     $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
+    $value['latestcurrentmembership.' . $prefix . 'membership'] = $statuses[$membership['id']];
   }
   return $value;
 }
