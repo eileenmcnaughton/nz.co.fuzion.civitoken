@@ -57,4 +57,40 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
     civitoken_civicrm_tokens($tokens);
     $this->assertEquals(['address' => ['address.address_block' => 'Address Block']], $tokens);
   }
+
+  /**
+   * Test whether the relationship tokens work.
+   */
+  public function testRelationShipTokens() {
+    $tokens = array();
+    civitoken_civicrm_tokens($tokens);
+    $this->assertTrue(!empty($tokens));
+
+    $relationships = relationships_get_relationship_list();
+    foreach($relationships as $id => $label) {
+      $this->assertEquals($label . ' : Name of first contact found', $tokens['relationships']['relationships.display_name_' . $id]);
+      $this->assertEquals($label . ' : First Name of first contact found', $tokens['relationships']['relationships.first_name_' . $id]);
+      $this->assertEquals($label . ' : Last Name of first contact found', $tokens['relationships']['relationships.last_name_' . $id]);
+      $this->assertEquals($label . ' : Phone of first contact found', $tokens['relationships']['relationships.phone_' . $id]);
+      $this->assertEquals($label . ' : Email of first contact found', $tokens['relationships']['relationships.email_' . $id]);
+      $this->assertEquals($label . ' : ID of first contact found', $tokens['relationships']['relationships.id_' . $id]);
+    }
+  }
+
+  /**
+   * Test token hook function is limited if a setting is used in this case for relationship.
+   */
+  public function testRelationShipTokensAlteredBySettings() {
+    $tokens = array();
+    $tokens_to_enable = array();
+    $relationships = relationships_get_relationship_list();
+    foreach($relationships as $id => $label) {
+      $tokens_to_enable[] = 'relationships.first_name_'.$id;
+    }
+    $this->callAPISuccess('Setting', 'create', array('civitoken_enabled_tokens' => $tokens_to_enable));
+    civitoken_civicrm_tokens($tokens);
+    foreach($relationships as $id => $label) {
+      $this->assertEquals($label . ' : First Name of first contact found', $tokens['relationships']['relationships.first_name_' . $id]);
+    }
+  }
 }
