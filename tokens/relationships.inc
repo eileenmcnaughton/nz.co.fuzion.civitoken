@@ -39,7 +39,8 @@ function relationships_get_relationship_list() {
   $result = civicrm_api3('relationship_type', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
   $relationships = array();
   foreach ($result['values'] as $key => $values) {
-    $relationships[$key . '_a_b'] = 'Relationship: ' . $values['label_b_a'];
+    $relationships[$key . '_a_b'] = 'Relationship: ' . $values['label_a_b'];
+    $relationships[$key . '_b_a'] = 'Relationship: ' . $values['label_b_a'];
   }
   return $relationships;
 }
@@ -65,6 +66,8 @@ function relationships_civitoken_get($cid, &$value) {
     'first_name',
     'last_name',
   );
+
+  // Get relationships from a to b
   $relationships = civicrm_api3('relationship', 'get', array(
     'contact_id_a' => $cid,
     'is_active' => TRUE,
@@ -94,6 +97,38 @@ function relationships_civitoken_get($cid, &$value) {
       }
     }
   }
+
+  // Get relationships from b to a
+  $relationships = civicrm_api3('relationship', 'get', array(
+    'contact_id_b' => $cid,
+    'is_active' => TRUE,
+    'api.contact.getsingle' => array(
+      'id' => '$value.contact_id_a',
+      'return' => $fields,
+    ),
+  ));
+  foreach ($relationships['values'] as $relationship) {
+    if (!empty($relationship['start_date']) && strtotime($relationship['start_date']) > strtotime('now')) {
+      continue;
+    }
+    if (!empty($relationship['end_date']) && strtotime($relationship['start_date']) < strtotime('now')) {
+      continue;
+    }
+    if (!empty($value['relationships.id_' . $relationship['relationship_type_id'] . '_b_a'])) {
+      // ID is set - so a contact with this relationship has been found, skip.
+      continue;
+    }
+
+    foreach ($fields as $key) {
+      if (empty($relationship['api.contact.getsingle'][$key])) {
+        $value['relationships.' . $key . '_' . $relationship['relationship_type_id'] . '_b_a'] = '';
+      }
+      else {
+        $value['relationships.' . $key . '_' . $relationship['relationship_type_id'] . '_b_a'] = $relationship['api.contact.getsingle'][$key];
+      }
+    }
+  }
+
   return $value;
 }
 
