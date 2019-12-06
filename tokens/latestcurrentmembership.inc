@@ -73,7 +73,7 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
     $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'],"%Y%m%d");
     $value['latestcurrentmembership.' . $prefix . 'fee'] = $membership['api.membership_type.getsingle']['minimum_fee'];
     $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
-    $value['latestcurrentmembership.' . $prefix . 'membership'] = $statuses[$membership['id']];
+    $value['latestcurrentmembership.' . $prefix . 'membership_id'] = $membership['id'];
   }
   return $value;
 }
