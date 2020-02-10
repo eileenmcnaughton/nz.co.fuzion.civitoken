@@ -60,6 +60,7 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    * Test token hook function is limited if a setting is used.
    *
    * @throws \CRM_Core_Exception
+   * @throws \CiviCRM_API3_Exception
    */
   public function testTokenHookAlteredBySetting() {
     $tokens = array();
