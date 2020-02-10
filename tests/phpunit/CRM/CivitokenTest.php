@@ -22,6 +22,14 @@ require_once 'BaseUnitTestClass.php';
  */
 class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
 
+  public $ids;
+
+  /**
+   * Set up for headless tests.
+   *
+   * @return \Civi\Test\CiviEnvBuilder
+   * @throws \CRM_Extension_Exception_ParseException
+   */
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
@@ -50,6 +58,8 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
 
   /**
    * Test token hook function is limited if a setting is used.
+   *
+   * @throws \CRM_Core_Exception
    */
   public function testTokenHookAlteredBySetting() {
     $tokens = array();
@@ -60,11 +70,13 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
 
   /**
    * Test whether the relationship tokens work.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function testRelationShipTokens() {
-    $tokens = array();
+    $tokens = [];
     civitoken_civicrm_tokens($tokens);
-    $this->assertTrue(!empty($tokens));
+    $this->assertNotEmpty($tokens);
 
     $relationships = relationships_get_relationship_list();
     foreach($relationships as $id => $label) {
@@ -81,6 +93,7 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    * Test token hook function is limited if a setting is used in this case for relationship.
    *
    * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function testRelationShipTokensAlteredBySettings() {
     $tokens = [];
