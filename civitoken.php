@@ -204,11 +204,11 @@ function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = NULL, $toke
   }
 
   foreach ($tokenFunctions as $token) {
-    if (in_array($token, array_keys($tokens))) {
+    if (array_key_exists($token, $tokens)) {
       $fn = $token . '_civitoken_get';
       foreach ($contactIDs as $contactID) {
         $value =& $values[$contactID];
-        $fn($contactID, $value, $context, $job);
+        $fn($contactID, $value, $context, $job, $tokens[$token]);
       }
     }
   }
