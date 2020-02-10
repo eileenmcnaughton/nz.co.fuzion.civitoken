@@ -14,7 +14,7 @@
  *   Available tokens.
  */
 function relationships_civitoken_declare($token) {
-  $tokens = array();
+  $tokens = [];
   foreach (relationships_get_relationship_list() as $id => $label) {
     $tokens[$token . '.display_name_' . $id] = $label . ' : Name of first contact found';
     $tokens[$token . '.first_name_' . $id] = $label . ' : First Name of first contact found';
@@ -36,8 +36,8 @@ function relationships_civitoken_declare($token) {
  * @throws \CiviCRM_API3_Exception
  */
 function relationships_get_relationship_list() {
-  $result = civicrm_api3('relationship_type', 'get', array('is_active' => 1, 'options' => array('limit' => 0)));
-  $relationships = array();
+  $result = civicrm_api3('relationship_type', 'get', ['is_active' => 1, 'options' => ['limit' => 0]]);
+  $relationships = [];
   foreach ($result['values'] as $key => $values) {
     $relationships[$key . '_a_b'] = 'Relationship: ' . $values['label_a_b'];
     $relationships[$key . '_b_a'] = 'Relationship: ' . $values['label_b_a'];
@@ -58,24 +58,24 @@ function relationships_get_relationship_list() {
  * @throws \CiviCRM_API3_Exception
  */
 function relationships_civitoken_get($cid, &$value) {
-  $fields = array(
+  $fields = [
     'display_name',
     'phone',
     'email',
     'id',
     'first_name',
     'last_name',
-  );
+  ];
 
   // Get relationships from a to b
-  $relationships = civicrm_api3('relationship', 'get', array(
+  $relationships = civicrm_api3('relationship', 'get', [
     'contact_id_a' => $cid,
     'is_active' => TRUE,
-    'api.contact.getsingle' => array(
+    'api.contact.getsingle' => [
       'id' => '$value.contact_id_b',
       'return' => $fields,
-    ),
-  ));
+    ],
+  ]);
   foreach ($relationships['values'] as $relationship) {
     if (!empty($relationship['start_date']) && strtotime($relationship['start_date']) > strtotime('now')) {
       continue;
@@ -99,14 +99,14 @@ function relationships_civitoken_get($cid, &$value) {
   }
 
   // Get relationships from b to a
-  $relationships = civicrm_api3('relationship', 'get', array(
+  $relationships = civicrm_api3('relationship', 'get', [
     'contact_id_b' => $cid,
     'is_active' => TRUE,
-    'api.contact.getsingle' => array(
+    'api.contact.getsingle' => [
       'id' => '$value.contact_id_a',
       'return' => $fields,
-    ),
-  ));
+    ],
+  ]);
   foreach ($relationships['values'] as $relationship) {
     if (!empty($relationship['start_date']) && strtotime($relationship['start_date']) > strtotime('now')) {
       continue;
@@ -142,7 +142,7 @@ function relationships_civitoken_get($cid, &$value) {
  *   relationship type
  */
 function relationships_civitoken_get_relationship_id($string) {
-  $matches = array();
+  $matches = [];
   preg_match("/(.*)name_(.*)_(.*)_(.*)/", $string, $matches);
   return isset($matches[2]) ? $matches[2] : 0;
 }

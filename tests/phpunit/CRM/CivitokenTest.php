@@ -79,15 +79,17 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
 
   /**
    * Test token hook function is limited if a setting is used in this case for relationship.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
   public function testRelationShipTokensAlteredBySettings() {
-    $tokens = array();
-    $tokens_to_enable = array();
+    $tokens = [];
+    $tokens_to_enable = [];
     $relationships = relationships_get_relationship_list();
     foreach($relationships as $id => $label) {
       $tokens_to_enable[] = 'relationships.first_name_'.$id;
     }
-    $this->callAPISuccess('Setting', 'create', array('civitoken_enabled_tokens' => $tokens_to_enable));
+    $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $tokens_to_enable]);
     civitoken_civicrm_tokens($tokens);
     foreach($relationships as $id => $label) {
       $this->assertEquals($label . ' : First Name of first contact found', $tokens['relationships']['relationships.first_name_' . $id]);
