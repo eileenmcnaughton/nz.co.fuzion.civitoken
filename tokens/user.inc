@@ -8,22 +8,23 @@
 
 /**
  * @param $token
+ *
  * @return array
  */
-function user_civitoken_declare($token){
-  return array(
-    $token. '.name' => 'Username',
-    $token. '.id' => 'UserID',
-  );
+function user_civitoken_declare($token) {
+  return [
+    $token . '.name' => 'Username',
+    $token . '.id' => 'UserID',
+  ];
 }
 
 /**
  * @param $cid
  * @param $value
  */
-function user_civitoken_get($cid, &$value){
+function user_civitoken_get($cid, &$value) {
   try {
-    $user = civicrm_api3('user', 'getsingle', array('contact_id' => $cid));
+    $user = civicrm_api3('user', 'getsingle', ['contact_id' => $cid]);
     $value['user.name'] = $user['name'];
     $value['user.id'] = $user['id'];
   }

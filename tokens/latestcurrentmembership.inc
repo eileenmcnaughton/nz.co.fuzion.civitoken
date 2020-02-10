@@ -1,7 +1,7 @@
 <?php
 
-function latestcurrentmembership_civitoken_declare($token){
-  return array(
+function latestcurrentmembership_civitoken_declare($token) {
+  return [
     $token . '.type' => 'Latest Current Membership Type',
     $token . '.end_date' => 'Latest Current Membership End Date',
     $token . '.end_date_raw' => 'Latest Current Membership End Date (raw)',
@@ -21,25 +21,25 @@ function latestcurrentmembership_civitoken_declare($token){
     $token . '.allfee' => 'Latest Membership Fee',
     $token . '.allstatus' => 'Latest Membership Status',
     $token . '.membership_id' => 'Latest Membership ID',
-  );
+  ];
 }
 
 
-function latestcurrentmembership_civitoken_get($cid, &$value, $context){
+function latestcurrentmembership_civitoken_get($cid, &$value, $context) {
   latestcurrentmembership_get_tokens($cid, $value, FALSE);
   latestcurrentmembership_get_tokens($cid, $value, TRUE);
 }
 
 function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
-  $params = array(
+  $params = [
     'version' => 3,
     'contact_id' => $cid,
     'sequential' => 1,
     'api.membership_type.getsingle' => 1,
     'is_test' => 0,
-    'options' => array('limit' => 1, 'sort' => 'end_date DESC'),
+    'options' => ['limit' => 1, 'sort' => 'end_date DESC'],
     //'return' => array('membership_end_date', 'end_date', 'start_date', 'status_id', 'minimum_fee', 'membership_name', 'id', 'membership_type_id'),
-  );
+  ];
   $prefix = 'all';
   if ($onlyActive) {
     $params['is_active'] = 1;
@@ -49,14 +49,14 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
 
   static $statuses;
   if (empty($statuses)) {
-    $statuses = civicrm_api3('membership', 'getoptions', array('field' => 'status_id'));
+    $statuses = civicrm_api3('membership', 'getoptions', ['field' => 'status_id']);
     $statuses = $statuses['values'];
   }
   try {
     $membership = civicrm_api3('membership', 'getsingle', $params);
   }
   catch (Exception $e) {
-    $tokens = array('type', 'end_date', 'start_date', 'join_date', 'fee', 'status');
+    $tokens = ['type', 'end_date', 'start_date', 'join_date', 'fee', 'status'];
     foreach ($tokens as $token) {
       $value['latestcurrentmembership.' . $prefix . $token] = NULL;
     }
@@ -66,11 +66,11 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
   if (!CRM_Utils_Array::value('is_error', $membership)) {
     $value['latestcurrentmembership.' . $prefix . 'type'] = $membership['api.membership_type.getsingle']['name'];
     $value['latestcurrentmembership.' . $prefix . 'end_date'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date']) : '';
-    $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date'],"%Y%m%d") : '';
+    $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date'], "%Y%m%d") : '';
     $value['latestcurrentmembership.' . $prefix . 'start_date'] = CRM_Utils_Date::customFormat($membership['start_date']);
-    $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = CRM_Utils_Date::customFormat($membership['start_date'],"%Y%m%d");
+    $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = CRM_Utils_Date::customFormat($membership['start_date'], "%Y%m%d");
     $value['latestcurrentmembership.' . $prefix . 'join_date'] = CRM_Utils_Date::customFormat($membership['join_date']);
-    $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'],"%Y%m%d");
+    $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'], "%Y%m%d");
     $value['latestcurrentmembership.' . $prefix . 'fee'] = CRM_Utils_Money::format($membership['api.membership_type.getsingle']['minimum_fee']);
     $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
     $value['latestcurrentmembership.' . $prefix . 'membership_id'] = $membership['id'];
