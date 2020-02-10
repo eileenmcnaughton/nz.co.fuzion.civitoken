@@ -109,4 +109,23 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
       $this->assertEquals($label . ' : First Name of first contact found', $tokens['relationships']['relationships.first_name_' . $id]);
     }
   }
+
+  /**
+   * Test contribution tokens for a contact with no contributions.
+   *
+   * This tests that regression from https://github.com/eileenmcnaughton/nz.co.fuzion.civitoken/pull/18
+   * whereby an exception was thrown for contact without contributions stays fixed.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testContributionTokenNull() {
+    $contributionTokens = [
+      'latestcontribs.financial_type',
+      'nextpendingcontribution.financial_type',
+    ];
+    $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $contributionTokens]);
+    $this->ids['contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'bob'])['id'];
+    $values = [];
+    civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, ['latestcontribs' => ['financial_type'], 'nextpendingcontribution' => ['financial_type']]);
+  }
 }

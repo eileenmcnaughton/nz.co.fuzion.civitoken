@@ -10,8 +10,10 @@ function latestcontribs_civitoken_declare($token) {
 }
 
 
-function latestcontribs_civitoken_get($cid, &$value, $context) {
-  $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($cid);
+function latestcontribs_civitoken_get($cid, &$value, $context, $job, $tokens) {
+  if (in_array('softcredit_name', $tokens)) {
+    $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($cid);
+  }
   $value = _latestcontribs_get_last_completed_contribution($cid, $value);
 
   return $value;
