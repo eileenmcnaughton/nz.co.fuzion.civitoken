@@ -120,12 +120,24 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    */
   public function testContributionTokenNull() {
     $contributionTokens = [
-      'latestcontribs.financial_type',
-      'nextpendingcontribution.financial_type',
+      'latestcontribs.softcredit_name',
+      'latestcontribs.softcredit_type',
     ];
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $contributionTokens]);
     $this->ids['contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'bob'])['id'];
+    $this->ids['contact'][1] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'bob'])['id'];
+    $this->ids['contribution'][0] = $this->callAPISuccess('Contribution', 'create', [
+      'api.ContributionSoft.create' => ['amount' => 5, 'contact_id' => $this->ids['contact'][1], 'soft_credit_type_id' => 'in_memory_of'],
+      'total_amount' => 10,
+      'contact_id' => $this->ids['contact'][0],
+      'financial_type_id' => 'Donation',
+    ]);
     $values = [];
-    civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, ['latestcontribs' => ['financial_type'], 'nextpendingcontribution' => ['financial_type']]);
+    civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, ['latestcontribs' => ['softcredit_name', 'softcredit_type']]);
+    $this->assertEquals('In Memory of', $values[$this->ids['contact'][0]]['latestcontribs.softcredit_type']);
+  }
+
+  public function testSoftCreditToken() {
+
   }
 }
