@@ -10,9 +10,34 @@ function latestcontribs_civitoken_declare($token) {
 }
 
 
+/**
+ * @param int $cid
+ * @param $value
+ * @param $context
+ * @param $job
+ * @param $tokens
+ *
+ * @return array
+ *
+ * @throws \CRM_Core_Exception
+ * @throws \CiviCRM_API3_Exception
+ */
 function latestcontribs_civitoken_get($cid, &$value, $context, $job, $tokens) {
-  if (in_array('softcredit_name', $tokens)) {
-    $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($cid);
+  $lastCompletedContribution =  civicrm_api3('Contribution', 'getsingle', [
+    'sequential' => 1,
+    'contact_id' => $cid,
+    'is_test' => 0,
+    'options' => ['sort' => 'receive_date DESC', 'limit' => 1],
+  ]);
+  if (isset($lastCompletedContribution['soft_credit'])) {
+    $types = [];
+    foreach ($lastCompletedContribution['soft_credit'] as $softCredit) {
+      $types[] = $softCredit['soft_credit_type_label'];
+    }
+    $value['latestcontribs.softcredit_type']  = implode($types);
+    if (in_array('softcredit_name', $tokens)) {
+      $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($lastCompletedContribution['soft_credit']);
+    }
   }
   $value = _latestcontribs_get_last_completed_contribution($cid, $value);
 
@@ -61,36 +86,26 @@ function _latestcontribs_get_last_completed_contribution($cid, $value) {
 /**
  * Get the name of the soft credits. Returns an empty string when no soft credit are found.
  *
- * @param int $cid
- *   The contact id.
+ * @param array $softCredits
  *
  * @return string
  * @throws \CiviCRM_API3_Exception
  */
-function _latestcontribs_soft_credit_name($cid) {
-  $params = [
-    'sequential' => 1,
-    'contact_id' => $cid,
-    'is_test' => 0,
-    'options' => ['sort' => "receive_date DESC", 'limit' => 1],
-  ];
+function _latestcontribs_soft_credit_name($softCredits) {
+
   $softcredit_formatted = "";
 
-  $softcredit_name = civicrm_api3('Contribution', 'getsingle', $params);
-
-  if (isset($softcredit_name['soft_credit'])) {
-    $connector = "";
-    $i = 0;
-    $total = count($softcredit_name['soft_credit']);
-    foreach ($softcredit_name['soft_credit'] as $softcredit) {
-      $i++;
-      $softcredit_formatted .= $connector . $softcredit['contact_name'];
-      if ($i == ($total - 1)) {
-        $connector = " and ";
-      }
-      else {
-        $connector = ", ";
-      }
+  $connector = '';
+  $i = 0;
+  $total = count($softCredits);
+  foreach ($softCredits as $softcredit) {
+    $i++;
+    $softcredit_formatted .= $connector . $softcredit['contact_name'];
+    if ($i === ($total - 1)) {
+      $connector = ' and ';
+    }
+    else {
+      $connector = ', ';
     }
   }
   return $softcredit_formatted;
