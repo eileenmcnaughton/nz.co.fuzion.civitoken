@@ -199,7 +199,7 @@ function civitoken_get_flattened_list_all() {
 function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = NULL, $tokens = [], $context = NULL) {
   $tokenFunctions = civitoken_initialize();
   // @todo figure out full conditions for returning here.
-  if (empty($tokens) || array_keys($tokens) == ['contact']) {
+  if (empty($tokens) || (array_keys($tokens) === ['contact'])) {
     return;
   }
 
@@ -207,8 +207,10 @@ function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = NULL, $toke
     if (array_key_exists($token, $tokens)) {
       $fn = $token . '_civitoken_get';
       foreach ($contactIDs as $contactID) {
-        $value =& $values[$contactID];
-        $fn($contactID, $value, $context, $job, $tokens[$token]);
+        if (!isset($values[$contactID])) {
+          $values[$contactID] = [];
+        }
+        $fn($contactID, $values[$contactID], $context, $job, $tokens[$token]);
       }
     }
   }
@@ -218,38 +220,34 @@ function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = NULL, $toke
  * Gather functions from tokens in tokens folder
  */
 function civitoken_initialize() {
-  static $civitoken_init = NULL;
-  static $tokens = [];
-  if ($civitoken_init) {
-    return $tokens;
+  if (isset(Civi::$statics['civitoken']['tokens'])) {
+    return Civi::$statics['civitoken']['tokens'];
   }
-  static $tokenFiles = NULL;
+  $tokens = [];
   $config = CRM_Core_Config::singleton();
-  if (!is_array($tokenFiles)) {
-    $directories = [__DIR__ . '/tokens'];
-    if (!empty($config->customPHPPathDir)) {
-      if (file_exists($config->customPHPPathDir . '/tokens')) {
-        $directories[] = $config->customPHPPathDir . '/tokens';
-      }
-    }
-    // lookup extension directories
-    foreach (explode(':', get_include_path()) as $path) {
-      if (FALSE !== strpos($path, $config->extensionsDir) && file_exists($path . '/tokens')) {
-        $directories[] = $path;
-      }
-    }
-    foreach ($directories as $directory) {
-      $tokenFiles = _civitoken_civix_find_files($directory, '*.inc');
-      foreach ($tokenFiles as $file) {
-        require_once $file;
-        $re = "/.*\\/([a-z]*).inc/";
-        preg_match($re, $file, $matches);
-        $tokens[] = $matches[1];
-      }
+  $directories = [__DIR__ . '/tokens'];
+  if (!empty($config->customPHPPathDir)) {
+    if (file_exists($config->customPHPPathDir . '/tokens')) {
+      $directories[] = $config->customPHPPathDir . '/tokens';
     }
   }
-  $civitoken_init = 1;
-  return $tokens;
+  // lookup extension directories
+  foreach (explode(':', get_include_path()) as $path) {
+    if (FALSE !== strpos($path, $config->extensionsDir) && file_exists($path . '/tokens')) {
+      $directories[] = $path;
+    }
+  }
+  foreach ($directories as $directory) {
+    $tokenFiles = _civitoken_civix_find_files($directory, '*.inc');
+    foreach ($tokenFiles as $file) {
+      require_once $file;
+      $re = "/.*\\/([a-z]*).inc/";
+      preg_match($re, $file, $matches);
+      $tokens[] = $matches[1];
+    }
+  }
+  Civi::$statics['civitoken']['tokens'] = $tokens;
+  return Civi::$statics['civitoken']['tokens'];
 }
 
 /**

@@ -63,7 +63,7 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    * @throws \CiviCRM_API3_Exception
    */
   public function testTokenHookAlteredBySetting() {
-    $tokens = array();
+    $tokens = [];
     $this->callAPISuccess('Setting', 'create', array('civitoken_enabled_tokens' => array('address.address_block')));
     civitoken_civicrm_tokens($tokens);
     $this->assertEquals(['address' => ['address.address_block' => 'Address Block']], $tokens);
@@ -123,9 +123,10 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
       'latestcontribs.softcredit_name',
       'latestcontribs.softcredit_type',
     ];
+    $this->individualCreate();
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $contributionTokens]);
-    $this->ids['contact'][0] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'bob'])['id'];
-    $this->ids['contact'][1] = $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'bob'])['id'];
+    $this->ids['contact'][0] = $this->individualCreate();
+    $this->ids['contact'][1] = $this->individualCreate();
     $this->ids['contribution'][0] = $this->callAPISuccess('Contribution', 'create', [
       'api.ContributionSoft.create' => ['amount' => 5, 'contact_id' => $this->ids['contact'][1], 'soft_credit_type_id' => 'in_memory_of'],
       'total_amount' => 10,
@@ -137,7 +138,73 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
     $this->assertEquals('In Memory of', $values[$this->ids['contact'][0]]['latestcontribs.softcredit_type']);
   }
 
-  public function testSoftCreditToken() {
-
+  /**
+   * Test address token renders state.
+   *
+   * @throws \CRM_Core_Exception
+   */
+  public function testAddressToken() {
+    $this->ids['contact'][0] = $this->individualCreate();
+    $this->callAPISuccess('Address', 'create', ['contact_id' => $this->ids['contact'][0], 'city' => 'Baltimore', 'state_province_id' => 'Maine', 'country_id' => 'US']);
+    $tokens = ['address.address_block'];
+    $values = $this->processTokens($tokens);
+    $this->assertEquals([
+      'address.address_conditional_country' => 'UNITED STATES',
+      'address.address_block_text' => 'bob
+Baltimore, ME
+UNITED STATES
+',
+      'address.address_block' => 'bob<br />
+Baltimore, ME<br />
+UNITED STATES<br />
+',
+    ], $values[$this->ids['contact'][0]]
+    );
+    $this->callAPISuccess('Setting', 'create', ['mailing_format' => '{contact.addressee}
+{contact.street_address}
+{contact.supplemental_address_1}
+{contact.city}
+{contact.state_province_name}
+{contact.postal_code}
+{contact.country}']);
+    $values = $this->processTokens($tokens);
+    $this->assertEquals('bob
+Baltimore
+Maine
+UNITED STATES
+', $values[$this->ids['contact'][0]]['address.address_block_text']);
   }
+
+  /**
+   * Create a test individual.
+   *
+   * @return int
+   *
+   * @throws \CRM_Core_Exception
+   */
+  protected function individualCreate(): int {
+    return (int) $this->callAPISuccess('Contact', 'create', ['contact_type' => 'Individual', 'first_name' => 'bob'])['id'];
+  }
+
+  /**
+   * Process tokens through the hook.
+   *
+   * @param array $tokens
+   *
+   * @return array
+   * @throws \CRM_Core_Exception
+   */
+  protected function processTokens(array $tokens): array {
+    $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $tokens]);
+    $values = [];
+    $parsedTokens = [];
+    foreach ($tokens as $token) {
+      $split = explode('.', $token);
+      $parsedTokens[$split[0]] = $split[1];
+    }
+    \Civi::cache()->delete('civitoken_enabled_tokens');
+    civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, $parsedTokens);
+    return $values;
+  }
+
 }
