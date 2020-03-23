@@ -52,19 +52,18 @@ function address_civitoken_get($cid, &$value) {
  * @param int $contactID  relevant contact id
  * @param array $values prepopulated values array for given contact
  * @param string $format The desired address format.
+ *
+ * @throws CiviCRM_API3_Exception
  */
-function getMissingAddressFields($contactID, $contactDetails, $format = NULL) {
+function getMissingAddressFields($contactID, $contactDetails, $format = '') {
   if (empty($format)) {
-    $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-      'mailing_format'
-    );
+    $format = Civi::settings()->get('mailing_format');
   }
   // country & display name are used even if their token is not - e.g organisation name
   $requiredFields = array_merge(_extractTokens($format), ['country', 'display_name']);
 
   if (in_array('addressee', $requiredFields)) {
     static $addresseeFieldString;
-    static $addresseeFields = [];
     if (empty($addresseeFieldString)) {
 
       $optionValues = civicrm_api3('option_value', 'get', ['option_group_name' => 'addressee']);
@@ -78,6 +77,7 @@ function getMissingAddressFields($contactID, $contactDetails, $format = NULL) {
   $customMappings = [
     'individual_prefix' => 'prefix_id',// abnormal handling in api/bao layer
     'addressee' => 'addressee_display',
+    'state_province_name' => 'state_province',
   ];
   $fieldsToFill = [];
   foreach ($requiredFields as $requiredField) {
@@ -87,10 +87,9 @@ function getMissingAddressFields($contactID, $contactDetails, $format = NULL) {
   }
 
   foreach ($customMappings as $origField => $substituteField) {
-    if (isset($fieldsToFill[$origField])) {
+    if (in_array($origField, $fieldsToFill, TRUE)) {
       //our anomalies :-( - not sure prefix works as a return on api
-      $fieldsToFill[$substituteField] = 1;
-      unset($requiredFields[$origField]);
+      $fieldsToFill[] = $substituteField;
     }
   }
 
@@ -109,8 +108,8 @@ function getMissingAddressFields($contactID, $contactDetails, $format = NULL) {
     }
   }
   foreach ($customMappings as $origField => $substituteField) {
-    if (!empty($contact[$substituteField])) {
-      // individual prefix is an anomoly :-(
+    if (!empty($contact[$substituteField]) && empty($contact[$origField])) {
+      // individual prefix is an anomaly :-(
       $contact[$origField] = $contact[$substituteField];
     }
   }
@@ -120,9 +119,9 @@ function getMissingAddressFields($contactID, $contactDetails, $format = NULL) {
 /**
  * regex the (contact) tokens out of a string
  *
- * @param unknown $string
+ * @param string $string
  *
- * @return Ambigous <>
+ * @return string
  */
 function _extractTokens($string) {
   $tokens = [];
