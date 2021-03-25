@@ -38,14 +38,6 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
       ->apply();
   }
 
-  public function setUp() {
-    parent::setUp();
-  }
-
-  public function tearDown() {
-    parent::tearDown();
-  }
-
   /**
    * Test token hook function works.
    */
