@@ -44,7 +44,7 @@ function _contribution_civitoken_get_latest_recur_contribution_id($cid) {
   $recur = civicrm_api3('ContributionRecur', 'get', [
     'sequential' => 1,
     'contact_id' => $cid,
-    'contribution_status_id' => "Pending",
+    'contribution_status_id' => "In Progress",
     'options' => ['sort' => "id DESC"],
   ]);
   if (!empty($recur['count']) && !empty($recur['values'][0]['id'])) {
