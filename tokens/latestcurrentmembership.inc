@@ -64,16 +64,32 @@ function latestcurrentmembership_get_tokens($cid, &$value, $onlyActive) {
   }
 
   if (!CRM_Utils_Array::value('is_error', $membership)) {
-    $value['latestcurrentmembership.' . $prefix . 'type'] = $membership['api.membership_type.getsingle']['name'];
-    $value['latestcurrentmembership.' . $prefix . 'end_date'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date']) : '';
-    $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date'], "%Y%m%d") : '';
-    $value['latestcurrentmembership.' . $prefix . 'start_date'] = CRM_Utils_Date::customFormat($membership['start_date']);
-    $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = CRM_Utils_Date::customFormat($membership['start_date'], "%Y%m%d");
-    $value['latestcurrentmembership.' . $prefix . 'join_date'] = CRM_Utils_Date::customFormat($membership['join_date']);
-    $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'], "%Y%m%d");
-    $value['latestcurrentmembership.' . $prefix . 'fee'] = CRM_Utils_Money::format($membership['api.membership_type.getsingle']['minimum_fee']);
-    $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
-    $value['latestcurrentmembership.' . $prefix . 'membership_id'] = $membership['id'];
+    if (isset($prefix)) {
+      if (isset($membership['api.membership_type.getsingle']['name'])) {
+        $value['latestcurrentmembership.' . $prefix . 'type'] = $membership['api.membership_type.getsingle']['name'];
+      }
+      if (isset($membership['end_date'])) {
+        $value['latestcurrentmembership.' . $prefix . 'end_date'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date']) : '';
+        $value['latestcurrentmembership.' . $prefix . 'end_date_raw'] = !empty($membership['end_date']) ? CRM_Utils_Date::customFormat($membership['end_date'], "%Y%m%d") : '';
+      }
+      if (isset($membership['start_date'])) {
+        $value['latestcurrentmembership.' . $prefix . 'start_date'] = CRM_Utils_Date::customFormat($membership['start_date']);
+        $value['latestcurrentmembership.' . $prefix . 'start_date_raw'] = CRM_Utils_Date::customFormat($membership['start_date'], "%Y%m%d");
+      }
+      if (isset($membership['join_date'])) {
+        $value['latestcurrentmembership.' . $prefix . 'join_date'] = CRM_Utils_Date::customFormat($membership['join_date']);
+        $value['latestcurrentmembership.' . $prefix . 'join_date_raw'] = CRM_Utils_Date::customFormat($membership['join_date'], "%Y%m%d");
+      }
+      if (isset($membership['api.membership_type.getsingle']['minimum_fee'])) {
+        $value['latestcurrentmembership.' . $prefix . 'fee'] = CRM_Utils_Money::format($membership['api.membership_type.getsingle']['minimum_fee']);
+      }
+      if (isset($statuses[$membership['status_id']])) {
+        $value['latestcurrentmembership.' . $prefix . 'status'] = $statuses[$membership['status_id']];
+      }
+      if (isset($membership['id'])) {
+        $value['latestcurrentmembership.' . $prefix . 'membership_id'] = $membership['id'];
+      }
+    }
   }
   return $value;
 }
