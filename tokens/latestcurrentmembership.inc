@@ -25,7 +25,7 @@ function latestcurrentmembership_civitoken_declare($token) {
 }
 
 
-function latestcurrentmembership_civitoken_get($cid, &$value, $context) {
+function latestcurrentmembership_civitoken_get($cid, &$value) {
   latestcurrentmembership_get_tokens($cid, $value, FALSE);
   latestcurrentmembership_get_tokens($cid, $value, TRUE);
 }

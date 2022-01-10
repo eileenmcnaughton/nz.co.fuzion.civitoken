@@ -59,7 +59,7 @@ class CiviTokens implements EventSubscriberInterface{
    * @throws \CiviCRM_API3_Exception
    */
   public function getTokenMetadata(): array {
-    $civiTokens = \Civi::cache()->get('civitoken_enabled_tokens');
+    $civiTokens = \Civi::cache('metadata')->get('civitoken_enabled_tokens');
     if (!is_array($civiTokens)) {
       $civiTokens = [];
       civitoken_civicrm_tokens_all($civiTokens);
@@ -108,6 +108,44 @@ class CiviTokens implements EventSubscriberInterface{
    */
   protected function getEntityIDField(): string {
     return 'contactId';
+  }
+
+  /**
+   * Populate the token data.
+   *
+   * @param \Civi\Token\Event\TokenValueEvent $e
+   *   The event, which includes a list of rows and tokens.
+   */
+  public function evaluateTokens(TokenValueEvent $e) {
+    if (!$this->checkActive($e->getTokenProcessor())) {
+      return;
+    }
+
+    $activeTokens = $e->getTokenProcessor()->getMessageTokens();
+    $civitokens = array_intersect_key($this->getTokenMetadata(), $activeTokens);
+    if (empty($civitokens)) {
+      return;
+    }
+    $tokenFunctions = civitoken_initialize();
+    foreach ($e->getRows() as $row) {
+      if (empty($row->context['contactId'])) {
+        continue;
+      }
+
+      foreach ($civitokens as $type => $tokens) {
+        foreach ($activeTokens[$type] as $token) {
+          if (in_array($type, $tokenFunctions, TRUE) && isset($civitokens[$type][$type . '.' . $token])) {
+            $fn = $type . '_civitoken_get';
+            $result = [];
+            $fn($row->context['contactId'], $result);
+            foreach ($result as $key => $value) {
+              $tokenName = explode('.', $key)[1];
+              $row->format('text/html')->tokens($type, $tokenName, (string) $value);
+            }
+         }
+        }
+      }
+    }
   }
 
 }

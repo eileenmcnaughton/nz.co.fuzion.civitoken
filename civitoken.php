@@ -1,6 +1,6 @@
 <?php
 
-use Civi\CiviTokens;
+use Civi\Token\CiviTokens;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -175,17 +175,6 @@ function civitoken_civicrm_navigationMenu(&$menu) {
   _civitoken_civix_navigationMenu($menu);
 }
 
-/**
- * implementation of CiviCRM hook
- *
- * @throws \CiviCRM_API3_Exception
- */
-function civitoken_civicrm_tokens(&$tokens) {
-  $processor = new \Civi\Token\CiviTokens();
-  $civiTokens = $processor->getTokenMetadata();
-  $tokens = array_merge($tokens, $civiTokens);
-
-}
 
 /**
  * implementation of CiviCRM hook
@@ -216,35 +205,6 @@ function civitoken_get_flattened_list_all() {
     }
   }
   return $flattenedTokens;
-}
-
-/**
- * implementation of CiviCRM hook
- *
- * @param array $values
- * @param $contactIDs
- * @param null $job
- * @param array $tokens
- * @param null $context
- */
-function civitoken_civicrm_tokenValues(&$values, $contactIDs, $job = NULL, $tokens = [], $context = NULL) {
-  $tokenFunctions = civitoken_initialize();
-  // @todo figure out full conditions for returning here.
-  if (empty($tokens) || (array_keys($tokens) === ['contact'])) {
-    return;
-  }
-
-  foreach ($tokenFunctions as $token) {
-    if (array_key_exists($token, $tokens)) {
-      $fn = $token . '_civitoken_get';
-      foreach ($contactIDs as $contactID) {
-        if (!isset($values[$contactID])) {
-          $values[$contactID] = [];
-        }
-        $fn($contactID, $values[$contactID], $context, $job, $tokens[$token]);
-      }
-    }
-  }
 }
 
 /**

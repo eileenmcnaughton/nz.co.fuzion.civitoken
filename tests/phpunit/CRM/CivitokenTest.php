@@ -50,8 +50,9 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
    * @throws \CiviCRM_API3_Exception
    */
   public function testTokenHook(): void {
-    $tokens = [];
-    civitoken_civicrm_tokens($tokens);
+    $processor = new \Civi\Token\CiviTokens();
+    $tokens = $processor->getTokenMetadata();
+
     $this->assertNotEmpty($tokens);
     $this->assertEquals('Address Block', $tokens['address']['address.address_block']);
   }
@@ -62,9 +63,9 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
    * @throws \CiviCRM_API3_Exception
    */
   public function testTokenHookAlteredBySetting(): void {
-    $tokens = [];
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => ['address.address_block']]);
-    civitoken_civicrm_tokens($tokens);
+    $processor = new \Civi\Token\CiviTokens();
+    $tokens = $processor->getTokenMetadata();
     $this->assertEquals(['address' => ['address.address_block' => 'Address Block']], $tokens);
   }
 
@@ -74,24 +75,16 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
    * @throws \CiviCRM_API3_Exception
    */
   public function testRelationShipTokens(): void {
-    $tokens = [];
-    civitoken_civicrm_tokens($tokens);
-    $this->assertNotEmpty($tokens);
-    $tokenProcessorTokens = $this->getTokenProcessorTokens();
-    foreach ($tokens as $entity => $entityTokens) {
-      foreach ($entityTokens as $token => $label) {
-        $this->assertEquals($label, $tokenProcessorTokens['{' . $token . '}']);
-      }
-    }
+    $tokens = $this->getTokenProcessorTokens();
 
     $relationships = relationships_get_relationship_list();
     foreach ($relationships as $id => $label) {
-      $this->assertEquals($label . ' : Name of first contact found', $tokens['relationships']['relationships.display_name_' . $id]);
-      $this->assertEquals($label . ' : First Name of first contact found', $tokens['relationships']['relationships.first_name_' . $id]);
-      $this->assertEquals($label . ' : Last Name of first contact found', $tokens['relationships']['relationships.last_name_' . $id]);
-      $this->assertEquals($label . ' : Phone of first contact found', $tokens['relationships']['relationships.phone_' . $id]);
-      $this->assertEquals($label . ' : Email of first contact found', $tokens['relationships']['relationships.email_' . $id]);
-      $this->assertEquals($label . ' : ID of first contact found', $tokens['relationships']['relationships.id_' . $id]);
+      $this->assertEquals($label . ' : Name of first contact found', $tokens['{relationships.display_name_' . $id . '}']);
+      $this->assertEquals($label . ' : First Name of first contact found', $tokens['{relationships.first_name_' . $id . '}']);
+      $this->assertEquals($label . ' : Last Name of first contact found', $tokens['{relationships.last_name_' . $id. '}']);
+      $this->assertEquals($label . ' : Phone of first contact found', $tokens['{relationships.phone_' . $id. '}']);
+      $this->assertEquals($label . ' : Email of first contact found', $tokens['{relationships.email_' . $id. '}']);
+      $this->assertEquals($label . ' : ID of first contact found', $tokens['{relationships.id_' . $id. '}']);
     }
   }
 
@@ -109,7 +102,8 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
       $tokens_to_enable[] = 'relationships.first_name_' . $id;
     }
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $tokens_to_enable]);
-    civitoken_civicrm_tokens($tokens);
+    $processor = new \Civi\Token\CiviTokens();
+    $tokens = $processor->getTokenMetadata();
     foreach ($relationships as $id => $label) {
       $this->assertEquals($label . ' : First Name of first contact found', $tokens['relationships']['relationships.first_name_' . $id]);
     }
@@ -142,14 +136,8 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
       'contact_id' => $this->ids['contact'][0],
       'financial_type_id' => 'Donation',
     ]);
-    $values = [];
-    civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, [
-      'latestcontribs' => [
-        'softcredit_name',
-        'softcredit_type',
-      ],
-    ]);
-    $this->assertEquals('In Memory of', $values[$this->ids['contact'][0]]['latestcontribs.softcredit_type']);
+    $rendered = $this->processTokens(['latestcontribs.softcredit_name', 'latestcontribs.softcredit_type']);
+    $this->assertEquals('bob In Memory of',  $rendered);
   }
 
   /**
@@ -164,7 +152,7 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
     }
 
     // This is a test  it doesn't matter if it's not supported - everything that IS supported is hard to use.
-    $rendered = $this->render(['text' => $string], ['contactId' => $this->ids['contact'][0]], []);
+    $rendered = $this->render(['text' => $string]);
     $this->assertStringContainsString('Communication Style: Formal', $rendered['text']);
   }
 
@@ -190,40 +178,28 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
    *   Ex: ['msg_subject' => 'Hello Bob Roberts', 'msg_text' => 'What up?']
    * @internal
    */
-  protected function render(array $messages, array $tokenContext = [], array $smartyAssigns = []): array {
+  protected function render(array $messages, $format = 'text/html'): array {
     $result = [];
     $tokenContextDefaults = [
       'controller' => __CLASS__,
       'smarty' => TRUE,
+      'schema' => ['contactId'],
     ];
-    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), array_merge($tokenContextDefaults, $tokenContext));
-    $tokenProcessor->addRow([]);
-    $useSmarty = !empty($tokenProcessor->context['smarty']);
+    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), $tokenContextDefaults);
+    $tokenProcessor->addRow(['contactId' => $this->ids['contact'][0]]);
 
     // Load templates
     foreach ($messages as $messageId => $messageTpl) {
-      $format = FALSE !== strpos($messageId, "html") ? 'text/html' : 'text/plain';
       $tokenProcessor->addMessage($messageId, $messageTpl, $format);
     }
 
     // Evaluate/render templates
-    try {
-      if ($useSmarty) {
-        CRM_Core_Smarty::singleton()->pushScope($smartyAssigns);
-      }
-      $tokenProcessor->evaluate();
-      foreach ($messages as $messageId => $ign) {
-        foreach ($tokenProcessor->getRows() as $row) {
-          $result[$messageId] = $row->render($messageId);
-        }
+    $tokenProcessor->evaluate();
+    foreach ($messages as $messageId => $ign) {
+      foreach ($tokenProcessor->getRows() as $row) {
+        $result[$messageId] = $row->render($messageId);
       }
     }
-    finally {
-      if ($useSmarty) {
-        CRM_Core_Smarty::singleton()->popScope();
-      }
-    }
-
     return $result;
   }
 
@@ -239,19 +215,11 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
       'country_id' => 'US',
     ]);
     $tokens = ['address.address_block'];
-    $values = $this->processTokens($tokens);
-    $this->assertEquals([
-      'address.address_conditional_country' => 'UNITED STATES',
-      'address.address_block_text' => 'bob
-Baltimore, ME
-UNITED STATES
-',
-      'address.address_block' => 'bob<br />
+    $rendered = $this->processTokens($tokens);
+    $this->assertEquals('bob<br />
 Baltimore, ME<br />
 UNITED STATES<br />
-',
-    ], $values[$this->ids['contact'][0]]
-    );
+', $rendered);
     $this->callAPISuccess('Setting', 'create', [
       'mailing_format' => '{contact.addressee}
 {contact.street_address}
@@ -261,12 +229,12 @@ UNITED STATES<br />
 {contact.postal_code}
 {contact.country}',
     ]);
-    $values = $this->processTokens($tokens);
+    $rendered = $this->processTokens($tokens, 'text/plain');
     $this->assertEquals('bob
 Baltimore
 Maine
 UNITED STATES
-', $values[$this->ids['contact'][0]]['address.address_block_text']);
+', $rendered);
   }
 
   /**
@@ -287,19 +255,13 @@ UNITED STATES
    *
    * @param array $tokens
    *
-   * @return array
+   * @return string
    */
-  protected function processTokens(array $tokens): array {
+  protected function processTokens(array $tokens, $format = 'text/html'): string {
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $tokens]);
-    $values = [];
-    $parsedTokens = [];
-    foreach ($tokens as $token) {
-      $split = explode('.', $token);
-      $parsedTokens[$split[0]] = $split[1];
-    }
     Civi::cache()->delete('civitoken_enabled_tokens');
-    civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, $parsedTokens);
-    return $values;
+    $text = '{' . implode('} {' , $tokens) . '}';
+    return $this->render(['text' => $text], $format)['text'];
   }
 
   /**
@@ -312,6 +274,22 @@ UNITED STATES
       'schema' => ['contactId'],
     ]);
     return $tokenProcessor->listTokens();
+  }
+
+  /**
+   * @param string $message
+   *
+   * @return string
+   */
+  protected function getRendered(string $message): string {
+    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), []);
+    $tokenProcessor->addRow(['contactId' => [$this->ids['contact'][0]]]);
+    $tokenProcessor->addMessage('text', $message, 'text/html');
+    $tokenProcessor->evaluate();
+    // Display mail-merge data.
+    foreach ($tokenProcessor->getRows() as $row) {
+      return $row->render('text');
+    }
   }
 
 }

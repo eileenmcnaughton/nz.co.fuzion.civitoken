@@ -13,16 +13,13 @@ function latestcontribs_civitoken_declare($token) {
 /**
  * @param int $cid
  * @param $value
- * @param $context
- * @param $job
- * @param $tokens
  *
  * @return array
  *
  * @throws \CRM_Core_Exception
  * @throws \CiviCRM_API3_Exception
  */
-function latestcontribs_civitoken_get(int $cid, &$value, $context, $job, $tokens): array {
+function latestcontribs_civitoken_get(int $cid, &$value): array {
   $lastCompletedContribution =  civicrm_api3('Contribution', 'get', [
     'sequential' => 1,
     'contact_id' => $cid,
@@ -36,9 +33,7 @@ function latestcontribs_civitoken_get(int $cid, &$value, $context, $job, $tokens
       $types[] = $softCredit['soft_credit_type_label'];
     }
     $value['latestcontribs.softcredit_type']  = implode($types);
-    if (in_array('softcredit_name', $tokens, TRUE)) {
-      $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($lastCompletedContribution['soft_credit']);
-    }
+    $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($lastCompletedContribution['soft_credit']);
   }
   $value = _latestcontribs_get_last_completed_contribution($cid, $value);
 

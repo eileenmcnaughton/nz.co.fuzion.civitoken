@@ -18,20 +18,12 @@ function nextpendingcontribution_civitoken_declare($token) {
 /**
  * @param int $cid
  * @param array $value
- * @param string $context
- * @param string $job
- * @param array $tokens
  *
  * @return array
  * @throws \CiviCRM_API3_Exception
  */
-function nextpendingcontribution_civitoken_get($cid, &$value, $context, $job, $tokens): array {
-  if (in_array('softcredit_name', $tokens)) {
-    $value['nextpendingcontribution.softcredit_name'] = _nextpendingcontribution_soft_credit_name($cid);
-  }
-  else {
-    $value['nextpendingcontribution.softcredit_name'] = '';
-  }
+function nextpendingcontribution_civitoken_get($cid, &$value): array {
+  $value['nextpendingcontribution.softcredit_name'] = _nextpendingcontribution_soft_credit_name($cid);
   $value = _nextpendingcontribution_get_next_pending_contribution($cid, $value);
 
   return $value;
