@@ -119,6 +119,25 @@ function civitoken_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 /**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
+ */
+function civitoken_civicrm_navigationMenu(&$menu) {
+
+  _civitoken_civix_insert_navigation_menu($menu, 'Administer/Communications', [
+    'label' => ts('Enabled Tokens', ['domain' => 'nz.co.fuzion.civitoken']),
+    'name' => 'enabled_civitokens',
+    'url' => 'civicrm/a/#/civitoken/settings',
+    'permission' => 'administer CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ]);
+  _civitoken_civix_navigationMenu($menu);
+}
+
+
+/**
  * implementation of CiviCRM hook
  *
  * @throws \CiviCRM_API3_Exception
@@ -248,22 +267,4 @@ function civitoken_initialize() {
   }
   Civi::$statics['civitoken']['tokens'] = $tokens;
   return Civi::$statics['civitoken']['tokens'];
-}
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- */
-function civitoken_civicrm_navigationMenu(&$menu) {
-
-  _civitoken_civix_insert_navigation_menu($menu, 'Administer/Communications', [
-    'label' => ts('Enabled Tokens', ['domain' => 'nz.co.fuzion.civitoken']),
-    'name' => 'enabled_civitokens',
-    'url' => 'civicrm/a/#/civitoken/settings',
-    'permission' => 'administer CiviCRM',
-    'operator' => 'OR',
-    'separator' => 0,
-  ]);
-  _civitoken_civix_navigationMenu($menu);
 }
