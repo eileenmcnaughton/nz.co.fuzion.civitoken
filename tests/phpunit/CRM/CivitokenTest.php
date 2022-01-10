@@ -1,10 +1,12 @@
 <?php
 
+use Civi\Test\Api3TestTrait;
 use Civi\Test\CiviEnvBuilder;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
 use Civi\Token\TokenProcessor;
+use PHPUnit\Framework\TestCase;
 
 require_once 'BaseUnitTestClass.php';
 
@@ -22,8 +24,9 @@ require_once 'BaseUnitTestClass.php';
  *
  * @group headless
  */
-class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
 
+  use Api3TestTrait;
   public $ids;
 
   /**
@@ -73,6 +76,7 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
     $tokens = [];
     civitoken_civicrm_tokens($tokens);
     $this->assertNotEmpty($tokens);
+    $tokenProcessorTokens = $this->getTokenProcessorTokens();
 
     $relationships = relationships_get_relationship_list();
     foreach ($relationships as $id => $label) {
@@ -147,20 +151,74 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    */
   public function testNoFatal(): void {
     $this->ids['contact'][0] = $this->individualCreate();
-    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
-      'schema' => ['contactId'],
-      'tokenContext' => ['contactId' => $this->ids['contact'][0]],
-    ]);
-    $tokens = $tokenProcessor->listTokens();
-    $tokenProcessor->addRow('text');
+    $tokens = $this->getTokenProcessorTokens();
     $string = '';
     foreach ($tokens as $token => $label) {
       $string.= $label . ': ' . $token . "\n";
     }
 
     // This is a test  it doesn't matter if it's not supported - everything that IS supported is hard to use.
-    $rendered = CRM_Core_TokenSmarty::render(['text' => $string], ['contactId' => $this->ids['contact'][0]], []);
+    $rendered = $this->render(['text' => $string], ['contactId' => $this->ids['contact'][0]], []);
     $this->assertStringContainsString('Communication Style: Formal', $rendered['text']);
+  }
+
+  /**
+   * Render some template(s), evaluating token expressions and Smarty expressions.
+   *
+   * Copied from Core as it is internal in core so should not call....
+   *
+   * This helper simplifies usage of hybrid notation. As a simplification, it may not be optimal for processing
+   * large batches (e.g. CiviMail or scheduled-reminders), but it's a little more convenient for 1-by-1 use-cases.
+   *
+   * @param array $messages
+   *   Message templates. Any mix of the following templates ('text', 'html', 'subject', 'msg_text', 'msg_html', 'msg_subject').
+   *   Ex: ['subject' => 'Hello {contact.display_name}', 'text' => 'What up?'].
+   *   Note: The content-type may be inferred by default. A key like 'html' or 'msg_html' indicates HTML formatting; any other key indicates text formatting.
+   * @param array $tokenContext
+   *   Ex: ['contactId' => 123, 'activityId' => 456]
+   * @param array|null $smartyAssigns
+   *   List of data to export via Smarty.
+   *   Data is only exported temporarily (long enough to execute this render() method).
+   * @return array
+   *   Rendered messages. These match the various inputted $messages.
+   *   Ex: ['msg_subject' => 'Hello Bob Roberts', 'msg_text' => 'What up?']
+   * @internal
+   */
+  protected function render(array $messages, array $tokenContext = [], array $smartyAssigns = []): array {
+    $result = [];
+    $tokenContextDefaults = [
+      'controller' => __CLASS__,
+      'smarty' => TRUE,
+    ];
+    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), array_merge($tokenContextDefaults, $tokenContext));
+    $tokenProcessor->addRow([]);
+    $useSmarty = !empty($tokenProcessor->context['smarty']);
+
+    // Load templates
+    foreach ($messages as $messageId => $messageTpl) {
+      $format = FALSE !== strpos($messageId, "html") ? 'text/html' : 'text/plain';
+      $tokenProcessor->addMessage($messageId, $messageTpl, $format);
+    }
+
+    // Evaluate/render templates
+    try {
+      if ($useSmarty) {
+        CRM_Core_Smarty::singleton()->pushScope($smartyAssigns);
+      }
+      $tokenProcessor->evaluate();
+      foreach ($messages as $messageId => $ign) {
+        foreach ($tokenProcessor->getRows() as $row) {
+          $result[$messageId] = $row->render($messageId);
+        }
+      }
+    }
+    finally {
+      if ($useSmarty) {
+        CRM_Core_Smarty::singleton()->popScope();
+      }
+    }
+
+    return $result;
   }
 
   /**
@@ -236,6 +294,18 @@ UNITED STATES
     Civi::cache()->delete('civitoken_enabled_tokens');
     civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, $parsedTokens);
     return $values;
+  }
+
+  /**
+   * Get the tokens declared via the token processor.
+   *
+   * @return array
+   */
+  protected function getTokenProcessorTokens(): array {
+    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
+      'schema' => ['contactId'],
+    ]);
+    return $tokenProcessor->listTokens();
   }
 
 }
