@@ -29,7 +29,8 @@ function latestcontribs_civitoken_get(int $cid, &$value, $context, $job, $tokens
     'is_test' => 0,
     'options' => ['sort' => 'receive_date DESC', 'limit' => 1],
   ])['values'][0] ?? NULL;
-  if (!$lastCompletedContribution && isset($lastCompletedContribution['soft_credit'])) {
+  $value['latestcontribs.softcredit_type'] = '';
+  if ($lastCompletedContribution && isset($lastCompletedContribution['soft_credit'])) {
     $types = [];
     foreach ($lastCompletedContribution['soft_credit'] as $softCredit) {
       $types[] = $softCredit['soft_credit_type_label'];
