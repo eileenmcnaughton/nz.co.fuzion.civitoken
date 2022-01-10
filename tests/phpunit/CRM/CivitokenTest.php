@@ -1,9 +1,11 @@
 <?php
 
-use CRM_Civitoken_ExtensionUtil as E;
+use Civi\Test\CiviEnvBuilder;
 use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
+use Civi\Token\TokenProcessor;
+
 require_once 'BaseUnitTestClass.php';
 
 /**
@@ -30,7 +32,7 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    * @return \Civi\Test\CiviEnvBuilder
    * @throws \CRM_Extension_Exception_ParseException
    */
-  public function setUpHeadless() {
+  public function setUpHeadless(): CiviEnvBuilder {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
     return \Civi\Test::headless()
@@ -40,21 +42,22 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
 
   /**
    * Test token hook function works.
+   *
+   * @throws \CiviCRM_API3_Exception
    */
-  public function testTokenHook() {
+  public function testTokenHook(): void {
     $tokens = [];
     civitoken_civicrm_tokens($tokens);
-    $this->assertTrue(!empty($tokens));
+    $this->assertNotEmpty($tokens);
     $this->assertEquals('Address Block', $tokens['address']['address.address_block']);
   }
 
   /**
    * Test token hook function is limited if a setting is used.
    *
-   * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public function testTokenHookAlteredBySetting() {
+  public function testTokenHookAlteredBySetting(): void {
     $tokens = [];
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => ['address.address_block']]);
     civitoken_civicrm_tokens($tokens);
@@ -66,7 +69,7 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function testRelationShipTokens() {
+  public function testRelationShipTokens(): void {
     $tokens = [];
     civitoken_civicrm_tokens($tokens);
     $this->assertNotEmpty($tokens);
@@ -87,9 +90,8 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    * relationship.
    *
    * @throws \CiviCRM_API3_Exception
-   * @throws \CRM_Core_Exception
    */
-  public function testRelationShipTokensAlteredBySettings() {
+  public function testRelationShipTokensAlteredBySettings(): void {
     $tokens = [];
     $tokens_to_enable = [];
     $relationships = relationships_get_relationship_list();
@@ -110,9 +112,8 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
    * https://github.com/eileenmcnaughton/nz.co.fuzion.civitoken/pull/18 whereby
    * an exception was thrown for contact without contributions stays fixed.
    *
-   * @throws \CRM_Core_Exception
    */
-  public function testContributionTokenNull() {
+  public function testContributionTokenNull(): void {
     $contributionTokens = [
       'latestcontribs.softcredit_name',
       'latestcontribs.softcredit_type',
@@ -142,11 +143,30 @@ class CRM_CivitokenTest extends BaseUnitTestClass implements HeadlessInterface, 
   }
 
   /**
-   * Test address token renders state.
-   *
-   * @throws \CRM_Core_Exception
+   * Test that no fatal error occurs when all tokens are requested.
    */
-  public function testAddressToken() {
+  public function testNoFatal(): void {
+    $this->ids['contact'][0] = $this->individualCreate();
+    $tokenProcessor = new TokenProcessor(\Civi::dispatcher(), [
+      'schema' => ['contactId'],
+      'tokenContext' => ['contactId' => $this->ids['contact'][0]],
+    ]);
+    $tokens = $tokenProcessor->listTokens();
+    $tokenProcessor->addRow('text');
+    $string = '';
+    foreach ($tokens as $token => $label) {
+      $string.= $label . ': ' . $token . "\n";
+    }
+
+    // This is a test  it doesn't matter if it's not supported - everything that IS supported is hard to use.
+    $rendered = CRM_Core_TokenSmarty::render(['text' => $string], ['contactId' => $this->ids['contact'][0]], []);
+    $this->assertStringContainsString('Communication Style: Formal', $rendered['text']);
+  }
+
+  /**
+   * Test address token renders state.
+   */
+  public function testAddressToken(): void {
     $this->ids['contact'][0] = $this->individualCreate();
     $this->callAPISuccess('Address', 'create', [
       'contact_id' => $this->ids['contact'][0],
@@ -190,7 +210,6 @@ UNITED STATES
    *
    * @return int
    *
-   * @throws \CRM_Core_Exception
    */
   protected function individualCreate(): int {
     return (int) $this->callAPISuccess('Contact', 'create', [
@@ -205,7 +224,6 @@ UNITED STATES
    * @param array $tokens
    *
    * @return array
-   * @throws \CRM_Core_Exception
    */
   protected function processTokens(array $tokens): array {
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => $tokens]);
@@ -215,7 +233,7 @@ UNITED STATES
       $split = explode('.', $token);
       $parsedTokens[$split[0]] = $split[1];
     }
-    \Civi::cache()->delete('civitoken_enabled_tokens');
+    Civi::cache()->delete('civitoken_enabled_tokens');
     civitoken_civicrm_tokenValues($values, [$this->ids['contact'][0]], NULL, $parsedTokens);
     return $values;
   }

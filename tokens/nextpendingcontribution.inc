@@ -25,9 +25,12 @@ function nextpendingcontribution_civitoken_declare($token) {
  * @return array
  * @throws \CiviCRM_API3_Exception
  */
-function nextpendingcontribution_civitoken_get($cid, &$value, $context, $job, $tokens) {
+function nextpendingcontribution_civitoken_get($cid, &$value, $context, $job, $tokens): array {
   if (in_array('softcredit_name', $tokens)) {
     $value['nextpendingcontribution.softcredit_name'] = _nextpendingcontribution_soft_credit_name($cid);
+  }
+  else {
+    $value['nextpendingcontribution.softcredit_name'] = '';
   }
   $value = _nextpendingcontribution_get_next_pending_contribution($cid, $value);
 
@@ -53,13 +56,13 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
     $pending_contribution_status = civicrm_api3('OptionValue', 'getvalue', ['option_group_id' => 'contribution_status', 'return' => 'value', 'name' => 'Pending']);
     $sql = "SELECT
       civicrm_contribution.id,
-      civicrm_contribution.receive_date, 
-      civicrm_contribution.total_amount, 
+      civicrm_contribution.receive_date,
+      civicrm_contribution.total_amount,
       civicrm_financial_type.name as financial_type
-      FROM civicrm_contribution 
+      FROM civicrm_contribution
       LEFT JOIN civicrm_financial_type ON civicrm_contribution.financial_type_id = civicrm_financial_type.id
-      WHERE 
-      civicrm_contribution.is_test = 0 
+      WHERE
+      civicrm_contribution.is_test = 0
       AND civicrm_contribution.contribution_status_id = %2
       AND civicrm_contribution.contact_id = %1
       ORDER BY civicrm_contribution.receive_date ASC
@@ -94,7 +97,7 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
  * @return string
  * @throws \CiviCRM_API3_Exception
  */
-function _nextpendingcontribution_soft_credit_name($cid) {
+function _nextpendingcontribution_soft_credit_name($cid): string {
   $params = [
     'sequential' => 1,
     'contact_id' => $cid,
@@ -104,16 +107,16 @@ function _nextpendingcontribution_soft_credit_name($cid) {
   ];
   $softcredit_formatted = "";
 
-  $softcredit_name = civicrm_api3('Contribution', 'getsingle', $params);
+  $softcredit_name = civicrm_api3('Contribution', 'get', $params)['values'][0] ?? NULL;
 
-  if (isset($softcredit_name['soft_credit'])) {
+  if ($softcredit_name && isset($softcredit_name['soft_credit'])) {
     $connector = "";
     $i = 0;
     $total = count($softcredit_name['soft_credit']);
     foreach ($softcredit_name['soft_credit'] as $softcredit) {
       $i++;
       $softcredit_formatted .= $connector . $softcredit['contact_name'];
-      if ($i == ($total - 1)) {
+      if ($i === ($total - 1)) {
         $connector = " and ";
       }
       else {

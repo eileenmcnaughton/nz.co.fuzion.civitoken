@@ -22,20 +22,20 @@ function latestcontribs_civitoken_declare($token) {
  * @throws \CRM_Core_Exception
  * @throws \CiviCRM_API3_Exception
  */
-function latestcontribs_civitoken_get($cid, &$value, $context, $job, $tokens) {
-  $lastCompletedContribution =  civicrm_api3('Contribution', 'getsingle', [
+function latestcontribs_civitoken_get(int $cid, &$value, $context, $job, $tokens): array {
+  $lastCompletedContribution =  civicrm_api3('Contribution', 'get', [
     'sequential' => 1,
     'contact_id' => $cid,
     'is_test' => 0,
     'options' => ['sort' => 'receive_date DESC', 'limit' => 1],
-  ]);
-  if (isset($lastCompletedContribution['soft_credit'])) {
+  ])['values'][0] ?? NULL;
+  if (!$lastCompletedContribution && isset($lastCompletedContribution['soft_credit'])) {
     $types = [];
     foreach ($lastCompletedContribution['soft_credit'] as $softCredit) {
       $types[] = $softCredit['soft_credit_type_label'];
     }
     $value['latestcontribs.softcredit_type']  = implode($types);
-    if (in_array('softcredit_name', $tokens)) {
+    if (in_array('softcredit_name', $tokens, TRUE)) {
       $value['latestcontribs.softcredit_name'] = _latestcontribs_soft_credit_name($lastCompletedContribution['soft_credit']);
     }
   }
@@ -57,13 +57,13 @@ function latestcontribs_civitoken_get($cid, &$value, $context, $job, $tokens) {
  * @throws \Exception
  */
 function _latestcontribs_get_last_completed_contribution($cid, $value) {
-  $sql = 'SELECT civicrm_contribution.receive_date, 
-    civicrm_contribution.total_amount, 
+  $sql = 'SELECT civicrm_contribution.receive_date,
+    civicrm_contribution.total_amount,
     civicrm_financial_type.name as financial_type
-    FROM civicrm_contribution 
+    FROM civicrm_contribution
     LEFT JOIN civicrm_financial_type ON civicrm_contribution.financial_type_id = civicrm_financial_type.id
-    WHERE 
-    civicrm_contribution.is_test = 0 
+    WHERE
+    civicrm_contribution.is_test = 0
     AND civicrm_contribution.contribution_status_id = 1
     AND civicrm_contribution.contact_id = %1
     ORDER BY civicrm_contribution.receive_date DESC
