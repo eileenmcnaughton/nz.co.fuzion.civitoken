@@ -1,5 +1,5 @@
 Package: nz.co.fuzion.civitoken
-Copyright (C) 2014, FIXME <FIXME>
+Copyright (C) 2022, FIXME <FIXME>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------
