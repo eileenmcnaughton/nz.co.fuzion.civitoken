@@ -1,8 +1,14 @@
 <?php
 
+use Civi\CiviTokens;
+use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
 require_once 'civitoken.civix.php';
 // phpcs:disable
 use CRM_Civitoken_ExtensionUtil as E;
+use Symfony\Component\DependencyInjection\Definition;
+
 // phpcs:enable
 
 /**
@@ -175,34 +181,8 @@ function civitoken_civicrm_navigationMenu(&$menu) {
  * @throws \CiviCRM_API3_Exception
  */
 function civitoken_civicrm_tokens(&$tokens) {
-  $civiTokens = \Civi::cache()->get('civitoken_enabled_tokens');
-  if (!is_array($civiTokens)) {
-    $civiTokens = [];
-    civitoken_civicrm_tokens_all($civiTokens);
-    $setting = civicrm_api3('Setting', 'get', [
-      'return' => 'civitoken_enabled_tokens',
-      'sequential' => 1,
-    ])['values'][0];
-
-    if (empty($setting) || empty($setting['civitoken_enabled_tokens'])) {
-      // Treat un-configured as 'all enabled'.
-      \Civi::cache()->set('civitoken_enabled_tokens', $civiTokens);
-      $tokens = array_merge($tokens, $civiTokens);
-      return;
-    }
-
-    foreach ($civiTokens as $category => $tokenSubset) {
-      foreach ($tokenSubset as $key => $token) {
-        if (!in_array($key, $setting['civitoken_enabled_tokens'])) {
-          unset($civiTokens[$category][$key]);
-        }
-      }
-      if (empty($civiTokens[$category])) {
-        unset($civiTokens[$category]);
-      }
-    }
-    \Civi::cache()->set('civitoken_enabled_tokens', $civiTokens);
-  }
+  $processor = new \Civi\Token\CiviTokens();
+  $civiTokens = $processor->getTokenMetadata();
   $tokens = array_merge($tokens, $civiTokens);
 
 }
@@ -299,4 +279,17 @@ function civitoken_initialize() {
   }
   Civi::$statics['civitoken']['tokens'] = $tokens;
   return Civi::$statics['civitoken']['tokens'];
+}
+
+/**
+ * Add token services to the container.
+ *
+ * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+ */
+function civitoken_civicrm_container(ContainerBuilder $container) {
+  $container->addResource(new FileResource(__FILE__));
+  $container->setDefinition('crm_civitoken', new Definition(
+    \Civi\Token\CiviTokens::class,
+    []
+  ))->addTag('kernel.event_subscriber')->setPublic(TRUE);
 }

@@ -6,6 +6,7 @@ use Civi\Test\HeadlessInterface;
 use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
 use Civi\Token\TokenProcessor;
+use Civi\CiviTokens;
 use PHPUnit\Framework\TestCase;
 
 require_once 'BaseUnitTestClass.php';
@@ -77,6 +78,11 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
     civitoken_civicrm_tokens($tokens);
     $this->assertNotEmpty($tokens);
     $tokenProcessorTokens = $this->getTokenProcessorTokens();
+    foreach ($tokens as $entity => $entityTokens) {
+      foreach ($entityTokens as $token => $label) {
+        $this->assertEquals($label, $tokenProcessorTokens['{' . $token . '}']);
+      }
+    }
 
     $relationships = relationships_get_relationship_list();
     foreach ($relationships as $id => $label) {

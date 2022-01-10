@@ -1,32 +1,51 @@
 <?php
 
-namespace Civi;
+namespace Civi\Token;
 
 use Civi\Token\Event\TokenRegisterEvent;
 use Civi\Token\Event\TokenValueEvent;
 use Civi\Token\TokenProcessor;
 use Civi\Token\TokenRow;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class CiviTokens {
+/**
+ * Class to declare out CiviTokens to the TokenProcessor.
+ *
+ * We implement the EventSubscriberInterface because it seems to help us not
+ * have to make the functions static.
+ */
+class CiviTokens implements EventSubscriberInterface{
+
+  /**
+   * Get the implemented functions.
+   * @return array
+   */
+  public static function getSubscribedEvents(): array {
+    return [
+      'civi.token.list' => 'registerTokens',
+      'civi.token.eval' => 'evaluateTokens',
+    ];
+  }
 
   /**
    * Register the declared tokens.
    *
-   * @param \Civi\Token\Event\TokenRegisterEvent $e
+   * @param \Civi\Token\Event\TokenRegisterEvent $registerEvent
    *   The registration event. Add new tokens using register().
    *
    * @throws \CiviCRM_API3_Exception
    */
-  public function registerTokens(TokenRegisterEvent $e): void {
-    if (!$this->checkActive($e->getTokenProcessor())) {
+  public function registerTokens(TokenRegisterEvent $registerEvent): void {
+    if (!$this->checkActive($registerEvent->getTokenProcessor())) {
       return;
     }
-    foreach ($this->getTokenMetadata() as $tokenName => $field) {
-      if ($field['audience'] === 'user') {
-        $e->register([
-          'entity' => $this->entity,
+    foreach ($this->getTokenMetadata() as $entity => $field) {
+      foreach ($field as $fieldKey => $label) {
+        [, $tokenName] = explode('.', $fieldKey);
+        $registerEvent->register([
+          'entity' => $entity,
           'field' => $tokenName,
-          'label' => $field['title'],
+          'label' => $label,
         ]);
       }
     }
