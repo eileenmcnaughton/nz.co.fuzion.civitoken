@@ -100,7 +100,9 @@ class CiviTokens implements EventSubscriberInterface{
    * @return bool
    */
   public function checkActive(TokenProcessor $processor): bool {
-    return in_array($this->getEntityIDField(), $processor->context['schema'], TRUE);
+    return in_array($this->getEntityIDField(), $processor->context['schema'], TRUE)
+      // The mailing is not passing contactId in the context['schema'] - quick & dirty.
+      || in_array('mailingId', $processor->context['schema'], TRUE);
   }
 
   /**
