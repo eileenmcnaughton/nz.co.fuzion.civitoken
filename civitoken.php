@@ -167,7 +167,7 @@ function civitoken_initialize() {
     }
   }
   foreach ($directories as $directory) {
-    $tokenFiles = _civitoken_civix_find_files($directory, '*.inc');
+    $tokenFiles = CRM_Utils_File::findFiles($directory, '*.inc');
     foreach ($tokenFiles as $file) {
       require_once $file;
       $re = "/.*\\/([a-z]*).inc/";
