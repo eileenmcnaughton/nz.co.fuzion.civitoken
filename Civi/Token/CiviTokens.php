@@ -70,7 +70,7 @@ class CiviTokens implements EventSubscriberInterface{
 
       if (empty($setting) || empty($setting['civitoken_enabled_tokens'])) {
         // Treat un-configured as 'all enabled'.
-        \Civi::cache()->set('civitoken_enabled_tokens', $civiTokens);
+        \Civi::cache('metadata')->set('civitoken_enabled_tokens', $civiTokens);
         return $civiTokens;
       }
 
@@ -84,7 +84,7 @@ class CiviTokens implements EventSubscriberInterface{
           unset($civiTokens[$category]);
         }
       }
-      \Civi::cache()->set('civitoken_enabled_tokens', $civiTokens);
+      \Civi::cache('metadata')->set('civitoken_enabled_tokens', $civiTokens);
     }
     return $civiTokens;
   }
