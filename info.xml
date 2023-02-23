@@ -26,7 +26,7 @@
   </classloader>
   <civix>
     <namespace>CRM/Civitoken</namespace>
-    <format>22.05.2</format>
+    <format>23.02.0</format>
   </civix>
   <mixins>
     <mixin>ang-php@1.0.0</mixin>
