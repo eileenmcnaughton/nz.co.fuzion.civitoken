@@ -22,9 +22,7 @@ function address_civitoken_get($cid, &$value) {
   }
 
   if (empty($format)) {
-    $format = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME,
-      'mailing_format'
-    );
+    $format = \Civi::settings()->get('mailing_format');
   }
 
   if (isset($domain['domain_address']) && $contact['country_id'] == $domain['domain_address']['country_id']) {
