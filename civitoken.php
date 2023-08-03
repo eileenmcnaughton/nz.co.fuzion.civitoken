@@ -75,7 +75,7 @@ function civitoken_civicrm_tokens_all(&$tokens) {
   $civitokens = [];
   foreach ($tokenFunctions as $token) {
     $fn = $token . '_civitoken_declare';
-    $tokens[$token] = array_merge($civitokens, $fn($token));
+    $tokens[$token] = array_merge($civitokens, $fn($token) ?? []);
   }
   $tokens['civitokens'] = $civitokens;
 }
