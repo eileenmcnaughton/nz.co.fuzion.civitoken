@@ -28,10 +28,9 @@ function user_civitoken_get($cid, &$value) {
     $value['user.name'] = $user['name'];
     $value['user.id'] = $user['id'];
   }
-  catch (CiviCRM_API3_Exception $e) {
+  catch (CRM_Core_Exception $e) {
     $value['user.name'] = '';
     $value['user.id'] = '';
   }
-
 
 }

@@ -8,10 +8,13 @@ function address_civitoken_declare($token) {
   ];
 }
 
-/*
- * based on Michael McAndrew's code but updated to use v3 & to only query for required fields
-*https://github.com/michaelmcandrew/civicrm-addressblocktoken/blob/master/addressblocktoken.module
-*/
+/**
+ * based on Michael McAndrew's code but updated to use v3 & to only query for
+ * required fields
+ * https://github.com/michaelmcandrew/civicrm-addressblocktoken/blob/master/addressblocktoken.module
+ *
+ * @throws \CRM_Core_Exception
+ */
 function address_civitoken_get($cid, &$value) {
   $contact = getMissingAddressFields($cid, $value);
   $domain = civicrm_api3('domain', 'getsingle', ['current_domain' => 1]);
@@ -39,7 +42,7 @@ function address_civitoken_get($cid, &$value) {
   return $value;
 }
 
-/*
+/**
  * Function will gather any addition address info required for the mailing label. ie. it
  * will find out the fields required & if there are any for which the key is not currently
  * set it will look them up via api
@@ -48,14 +51,13 @@ function address_civitoken_get($cid, &$value) {
  * to prevent multipl calls on the DB
  *
  * @param int $contactID  relevant contact id
- * @param array $values prepopulated values array for given contact
+ * @param array $contactDetails prepopulated values array for given contact
  * @param string $format The desired address format.
  *
- * @throws CiviCRM_API3_Exception
  */
 function getMissingAddressFields($contactID, $contactDetails, $format = '') {
   if (empty($format)) {
-    $format = Civi::settings()->get('mailing_format');
+    $format = \Civi::settings()->get('mailing_format');
   }
   // country & display name are used even if their token is not - e.g organisation name
   $requiredFields = array_merge(_extractTokens($format), ['country', 'display_name']);
