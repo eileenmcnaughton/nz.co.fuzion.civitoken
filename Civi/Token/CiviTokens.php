@@ -33,7 +33,7 @@ class CiviTokens implements EventSubscriberInterface{
    * @param \Civi\Token\Event\TokenRegisterEvent $registerEvent
    *   The registration event. Add new tokens using register().
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function registerTokens(TokenRegisterEvent $registerEvent): void {
     if (!$this->checkActive($registerEvent->getTokenProcessor())) {
@@ -56,7 +56,7 @@ class CiviTokens implements EventSubscriberInterface{
    *
    * @return array
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function getTokenMetadata(): array {
     $civiTokens = \Civi::cache('metadata')->get('civitoken_enabled_tokens');

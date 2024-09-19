@@ -17,7 +17,6 @@ function latestcontribs_civitoken_declare($token) {
  * @return array
  *
  * @throws \CRM_Core_Exception
- * @throws \CiviCRM_API3_Exception
  */
 function latestcontribs_civitoken_get(int $cid, &$value): array {
   $lastCompletedContribution =  civicrm_api3('Contribution', 'get', [
@@ -85,7 +84,7 @@ function _latestcontribs_get_last_completed_contribution($cid, $value) {
  * @param array $softCredits
  *
  * @return string
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _latestcontribs_soft_credit_name($softCredits) {
 

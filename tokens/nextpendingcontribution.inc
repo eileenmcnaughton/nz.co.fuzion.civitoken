@@ -20,7 +20,7 @@ function nextpendingcontribution_civitoken_declare($token) {
  * @param array $value
  *
  * @return array
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function nextpendingcontribution_civitoken_get($cid, &$value): array {
   $value['nextpendingcontribution.softcredit_name'] = _nextpendingcontribution_soft_credit_name($cid);
@@ -87,7 +87,7 @@ function _nextpendingcontribution_get_next_pending_contribution($cid, $value) {
  *   The contact id.
  *
  * @return string
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _nextpendingcontribution_soft_credit_name($cid): string {
   $params = [

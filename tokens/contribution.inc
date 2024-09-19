@@ -18,7 +18,6 @@ function contribution_civitoken_declare($token) {
  *
  * @return mixed
  * @throws \CRM_Core_Exception
- * @throws \CiviCRM_API3_Exception
  */
 function contribution_civitoken_get($contactID, &$value) {
   $value['contribution.total_this_year_contribution_amount'] = \CRM_Utils_Money::format(_contribution_civitoken_get_total_amount_donated_by_year($contactID, 0));
@@ -38,7 +37,7 @@ function contribution_civitoken_get($contactID, &$value) {
  *   The contact id.
  *
  * @return int
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function _contribution_civitoken_get_latest_recur_contribution_id($cid) {
   $recur = civicrm_api3('ContributionRecur', 'get', [

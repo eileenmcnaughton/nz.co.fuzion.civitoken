@@ -47,7 +47,7 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
   /**
    * Test token hook function works.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function testTokenHook(): void {
     $processor = new \Civi\Token\CiviTokens();
@@ -60,7 +60,7 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
   /**
    * Test token hook function is limited if a setting is used.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function testTokenHookAlteredBySetting(): void {
     $this->callAPISuccess('Setting', 'create', ['civitoken_enabled_tokens' => ['address.address_block']]);
@@ -72,7 +72,7 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
   /**
    * Test whether the relationship tokens work.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function testRelationShipTokens(): void {
     $tokens = $this->getTokenProcessorTokens();
@@ -92,7 +92,7 @@ class CRM_CivitokenTest extends TestCase implements HeadlessInterface, HookInter
    * Test token hook function is limited if a setting is used in this case for
    * relationship.
    *
-   * @throws \CiviCRM_API3_Exception
+   * @throws \CRM_Core_Exception
    */
   public function testRelationShipTokensAlteredBySettings(): void {
     $tokens = [];

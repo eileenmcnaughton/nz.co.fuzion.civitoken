@@ -33,7 +33,7 @@ function relationships_civitoken_declare($token) {
  *   relationships keyed by type and direction (A-B direction only at this
  *   stage).
  *
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function relationships_get_relationship_list() {
   $result = civicrm_api3('relationship_type', 'get', ['is_active' => 1, 'options' => ['limit' => 0]]);
@@ -55,7 +55,7 @@ function relationships_get_relationship_list() {
  *
  * @return array
  *   array of token values for the contact.
- * @throws \CiviCRM_API3_Exception
+ * @throws \CRM_Core_Exception
  */
 function relationships_civitoken_get($cid, &$value) {
   $fields = [
