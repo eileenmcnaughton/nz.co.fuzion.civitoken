@@ -14,11 +14,11 @@
     <url desc="Support">http://forum.civicrm.org</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2023-08-04</releaseDate>
-  <version>1.10</version>
+  <releaseDate>2025-08-04</releaseDate>
+  <version>1.11</version>
   <develStage>stable</develStage>
   <compatibility>
-    <ver>5.63</ver>
+    <ver>6.0</ver>
   </compatibility>
   <comments>Extra CiviCRM tokens by Fuzion</comments>
   <classloader>
@@ -26,7 +26,7 @@
   </classloader>
   <civix>
     <namespace>CRM/Civitoken</namespace>
-    <format>23.02.1</format>
+    <format>25.01.1</format>
   </civix>
   <mixins>
     <mixin>ang-php@1.0.0</mixin>
