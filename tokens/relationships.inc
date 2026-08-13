@@ -21,6 +21,7 @@ function relationships_civitoken_declare($token) {
     $tokens[$token . '.last_name_' . $id] = $label . ' : Last Name of first contact found';
     $tokens[$token . '.phone_' . $id] = $label . ' : Phone of first contact found';
     $tokens[$token . '.email_' . $id] = $label . ' : Email of first contact found';
+    $tokens[$token . '.address_' . $id] = $label . ' : Address of first contact found';
     $tokens[$token . '.id_' . $id] = $label . ' : ID of first contact found';
   }
   return $tokens;
@@ -62,6 +63,15 @@ function relationships_civitoken_get($cid, &$value) {
     'display_name',
     'phone',
     'email',
+    'street_address',
+    'supplemental_address_1',
+    'supplemental_address_2',
+    'supplemental_address_3',
+    'postal_code',
+    'city',
+    'state_province_name',
+    'state_province',
+    'country',
     'id',
     'first_name',
     'last_name',
