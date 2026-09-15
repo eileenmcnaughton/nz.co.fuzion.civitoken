@@ -1,4 +1,4 @@
-(function(angular, $, _) {
+(function(angular, $) {
 
   angular.module('civitoken').config(function($routeProvider) {
       $routeProvider.when('/civitoken/settings', {
@@ -78,4 +78,4 @@
     };
   });
 
-})(angular, CRM.$, CRM._);
+})(angular, CRM.$);
