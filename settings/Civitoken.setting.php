@@ -5,7 +5,7 @@
  * Date: 1/10/18
  * Time: 4:30 PM
  */
- return array('civitoken_enabled_tokens' => array(
+ return ['civitoken_enabled_tokens' => [
   'group_name' => 'Civitoken Settings',
   'group' => 'civitoken',
   'name' => 'civitoken_enabled_tokens',
@@ -17,7 +17,7 @@
   'help_text' => '',
   'html_type' => 'Checkboxes',
   'quick_form_type' => 'Checkboxes',
-  'pseudoconstant' => array(
+  'pseudoconstant' => [
      'callback' => 'civitoken_get_flattened_list_all',
-   ),
-));
+   ],
+]];
