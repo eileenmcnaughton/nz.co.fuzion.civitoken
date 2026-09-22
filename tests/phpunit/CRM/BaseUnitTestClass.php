@@ -31,10 +31,10 @@ class BaseUnitTestClass extends \PHPUnit\Framework\TestCase{
    * @return array|int
    */
   public function callAPISuccessGetValue($entity, $params, $type = NULL) {
-    $params += array(
+    $params += [
       'version' => $this->_apiversion,
       'debug' => 1,
-    );
+    ];
     $result = $this->civicrm_api($entity, 'getvalue', $params);
     if ($type) {
       if ($type == 'integer') {
@@ -58,10 +58,10 @@ class BaseUnitTestClass extends \PHPUnit\Framework\TestCase{
    * @return array|int
    */
   public function callAPISuccessGetCount($entity, $params, $count = NULL) {
-    $params += array(
+    $params += [
       'version' => $this->_apiversion,
       'debug' => 1,
-    );
+    ];
     $result = $this->civicrm_api($entity, 'getcount', $params);
     if (!is_int($result) || !empty($result['is_error']) || isset($result['values'])) {
       throw new Exception('Invalid getcount result : ' . print_r($result, TRUE) . " type :" . gettype($result));
@@ -90,10 +90,10 @@ class BaseUnitTestClass extends \PHPUnit\Framework\TestCase{
    * @return array|int
    */
   public function callAPISuccessGetSingle($entity, $params, $checkAgainst = NULL) {
-    $params += array(
+    $params += [
       'version' => $this->_apiversion,
       'debug' => 1,
-    );
+    ];
     $result = $this->civicrm_api($entity, 'getsingle', $params);
     if (!is_array($result) || !empty($result['is_error']) || isset($result['values'])) {
       throw new Exception('Invalid getsingle result' . print_r($result, TRUE));
@@ -139,9 +139,9 @@ class BaseUnitTestClass extends \PHPUnit\Framework\TestCase{
    */
   public function callAPIFailure($entity, $action, $params, $expectedErrorMessage = NULL, $extraOutput = NULL) {
     if (is_array($params)) {
-      $params += array(
+      $params += [
         'version' => $this->_apiversion,
-      );
+      ];
     }
     $result = $this->civicrm_api($entity, $action, $params);
     $this->assertAPIFailure($result, "We expected a failure for $entity $action but got a success", $expectedErrorMessage);
